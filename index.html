@@ -292,63 +292,85 @@
             { symbol: 'ㅢ', name: 'ыи', sound: 'ыи' }
         ];
 
-        // ===== РЕНДЕР ХАНГЫЛЯ С ОЗВУЧКОЙ =====
-        function renderHangul() {
-            const consContainer = document.getElementById('consonants');
-            const doubleConsContainer = document.getElementById('double-consonants');
-            const vowContainer = document.getElementById('vowels');
-            const compoundVowContainer = document.getElementById('compound-vowels');
+        // ===== КЭШ АУДИО =====
+const audioCache = {};
 
-            function createCard(item, container) {
-                const card = document.createElement('div');
-                card.className = 'hangul-card';
-                card.innerHTML = `
-                    <span class="symbol">${item.symbol}</span>
-                    <span class="name">${item.name}</span>
-                    <span class="sound">[${item.sound}]</span>
-                `;
+async function getAudioBlob(symbol) {
+    if (audioCache[symbol]) return audioCache[symbol];
+    
+    const url = `${API_URL}/api/tts?text=${encodeURIComponent(symbol)}`;
+    const res = await fetch(url, {
+        headers: { 'ngrok-skip-browser-warning': 'true' }
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const blob = await res.blob();
+    audioCache[symbol] = URL.createObjectURL(blob);
+    return audioCache[symbol];
+}
 
-                // При клике показываем подсказку и проигрываем аудио
-                card.onclick = async () => {
-                    tg.showAlert(`${item.symbol} — ${item.name} (${item.sound})`);
+// ===== РЕНДЕР ХАНГЫЛЯ С ОЗВУЧКОЙ =====
+function renderHangul() {
+    const groups = [
+        ['consonants', consonants],
+        ['double-consonants', doubleConsonants],
+        ['vowels', vowels],
+        ['compound-vowels', compoundVowels]
+    ];
 
-                    // Визуальная обратная связь
-                    card.style.opacity = '0.6';
+    // Inline-подсказка под карточками
+    let hint = document.getElementById('hangul-hint');
+    if (!hint) {
+        hint = document.createElement('div');
+        hint.id = 'hangul-hint';
+        hint.style.cssText = 'position:sticky; bottom:0; background:var(--tg-theme-secondary-bg-color); padding:10px; border-radius:10px; margin-top:12px; font-size:14px; text-align:center; min-height:20px;';
+        document.getElementById('hangul').appendChild(hint);
+    }
 
-                    try {
-                        const audioUrl = `${API_URL}/api/tts?text=${encodeURIComponent(item.symbol)}`;
-                        console.log('Загрузка аудио:', audioUrl);
+    groups.forEach(([containerId, items]) => {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
 
-                        const audio = new Audio();
+        items.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'hangul-card';
+            card.innerHTML = `
+                <span class="symbol">${item.symbol}</span>
+                <span class="name">${item.name}</span>
+                <span class="sound">[${item.sound}]</span>
+            `;
 
-                        // Ждём загрузки аудио
-                        await new Promise((resolve, reject) => {
-                            audio.oncanplaythrough = resolve;
-                            audio.onerror = reject;
-                            audio.src = audioUrl;
-                        });
+            card.onclick = async () => {
+                // 1. Показываем информацию inline (НЕ через tg.showAlert!)
+                hint.innerHTML = `<b style="font-size:20px">${item.symbol}</b> — ${item.name} <span style="color:var(--tg-theme-link-color)">[${item.sound}]</span>`;
+                
+                // 2. Визуальная обратная связь
+                card.style.opacity = '0.5';
 
-                        // Теперь воспроизводим
-                        await audio.play();
-                        console.log('Аудио воспроизведено');
+                try {
+                    // 3. Получаем URL (из кэша или скачиваем)
+                    const audioUrl = await getAudioBlob(item.symbol);
+                    
+                    // 4. Воспроизводим
+                    const audio = new Audio(audioUrl);
+                    await audio.play();
+                } catch (error) {
+                    console.error('TTS error:', error);
+                    hint.innerHTML = `⚠️ Не удалось загрузить звук (${error.message})`;
+                } finally {
+                    card.style.opacity = '1';
+                }
+            };
 
-                    } catch (error) {
-                        console.error('Ошибка воспроизведения:', error);
-                        tg.showAlert('Не удалось воспроизвести аудио');
-                    } finally {
-                        card.style.opacity = '1';
-                    }
-                };
+            container.appendChild(card);
+        });
+    });
 
-                container.appendChild(card);
-            }
-        
-
-            consonants.forEach(c => createCard(c, consContainer));
-            doubleConsonants.forEach(c => createCard(c, doubleConsContainer));
-            vowels.forEach(v => createCard(v, vowContainer));
-            compoundVowels.forEach(v => createCard(v, compoundVowContainer));
-        }
+    // 5. Предзагружаем первые 5 букв при открытии таба — 
+    //    чтобы при первом клике не было задержки
+    setTimeout(() => {
+        consonants.slice(0, 5).forEach(c => getAudioBlob(c.symbol).catch(() => {}));
+    }, 500);
+}
 
         // ===== ПЕРЕКЛЮЧЕНИЕ ТАБОВ =====
         document.querySelectorAll('.tab').forEach(tab => {
