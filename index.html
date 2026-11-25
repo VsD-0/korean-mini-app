@@ -298,7 +298,7 @@
             const doubleConsContainer = document.getElementById('double-consonants');
             const vowContainer = document.getElementById('vowels');
             const compoundVowContainer = document.getElementById('compound-vowels');
-        
+
             function createCard(item, container) {
                 const card = document.createElement('div');
                 card.className = 'hangul-card';
@@ -307,24 +307,43 @@
                     <span class="name">${item.name}</span>
                     <span class="sound">[${item.sound}]</span>
                 `;
-                
+
                 // При клике показываем подсказку и проигрываем аудио
                 card.onclick = async () => {
                     tg.showAlert(`${item.symbol} — ${item.name} (${item.sound})`);
-                    
-                    // Пытаемся воспроизвести аудио
+
+                    // Визуальная обратная связь
+                    card.style.opacity = '0.6';
+
                     try {
                         const audioUrl = `${API_URL}/api/tts?text=${encodeURIComponent(item.symbol)}`;
-                        const audio = new Audio(audioUrl);
-                        audio.play().catch(err => console.log('Audio play failed:', err));
+                        console.log('Загрузка аудио:', audioUrl);
+
+                        const audio = new Audio();
+
+                        // Ждём загрузки аудио
+                        await new Promise((resolve, reject) => {
+                            audio.oncanplaythrough = resolve;
+                            audio.onerror = reject;
+                            audio.src = audioUrl;
+                        });
+
+                        // Теперь воспроизводим
+                        await audio.play();
+                        console.log('Аудио воспроизведено');
+
                     } catch (error) {
-                        console.error('TTS error:', error);
+                        console.error('Ошибка воспроизведения:', error);
+                        tg.showAlert('Не удалось воспроизвести аудио');
+                    } finally {
+                        card.style.opacity = '1';
                     }
                 };
-                
+
                 container.appendChild(card);
             }
         
+
             consonants.forEach(c => createCard(c, consContainer));
             doubleConsonants.forEach(c => createCard(c, doubleConsContainer));
             vowels.forEach(v => createCard(v, vowContainer));
