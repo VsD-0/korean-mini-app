@@ -24,6 +24,7 @@
             padding-bottom: 80px;
         }
         h2 { margin-top: 0; font-size: 20px; }
+        h3 { font-size: 16px; color: var(--tg-theme-hint-color); margin: 16px 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px; }
 
         /* Табы */
         .tabs {
@@ -58,44 +59,16 @@
         .section.active { display: block; }
 
         /* Таблица словаря */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 12px;
-            font-size: 15px;
-        }
-        th {
-            text-align: left;
-            color: var(--tg-theme-hint-color);
-            font-weight: 600;
-            padding: 8px 4px;
-            border-bottom: 1px solid var(--tg-theme-hint-color);
-        }
-        td {
-            padding: 12px 4px;
-            border-bottom: 1px solid var(--tg-theme-secondary-bg-color);
-        }
-        .kr-word {
-            font-weight: bold;
-            font-size: 1.1em;
-            color: var(--tg-theme-link-color);
-        }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 15px; }
+        th { text-align: left; color: var(--tg-theme-hint-color); font-weight: 600; padding: 8px 4px; border-bottom: 1px solid var(--tg-theme-hint-color); }
+        td { padding: 12px 4px; border-bottom: 1px solid var(--tg-theme-secondary-bg-color); }
+        .kr-word { font-weight: bold; font-size: 1.1em; color: var(--tg-theme-link-color); }
         .date { font-size: 0.85em; color: var(--tg-theme-hint-color); }
-        .loading { text-align: center; color: var(--tg-theme-hint-color); margin-top: 40px; }
+        .loading, .empty { text-align: center; color: var(--tg-theme-hint-color); margin-top: 40px; }
         .error { color: #e74c3c; text-align: center; margin-top: 40px; }
-        .empty { text-align: center; color: var(--tg-theme-hint-color); margin-top: 40px; }
 
         /* Хангыль */
-        .hangul-group {
-            margin-bottom: 20px;
-        }
-        .hangul-group h3 {
-            font-size: 16px;
-            color: var(--tg-theme-hint-color);
-            margin: 16px 0 8px 0;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+        .hangul-group { margin-bottom: 20px; }
         .hangul-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
@@ -115,28 +88,39 @@
             background: var(--tg-theme-button-color);
             color: var(--tg-theme-button-text-color);
         }
-        .hangul-card .symbol {
-            font-size: 28px;
-            font-weight: bold;
-            display: block;
-            margin-bottom: 4px;
+        .hangul-card .symbol { font-size: 28px; font-weight: bold; display: block; margin-bottom: 4px; }
+        .hangul-card .name { font-size: 11px; color: var(--tg-theme-hint-color); display: block; }
+        .hangul-card .sound { font-size: 12px; font-weight: 600; color: var(--tg-theme-link-color); display: block; margin-top: 2px; }
+        .hangul-card:active .name, .hangul-card:active .sound { color: inherit; opacity: 0.8; }
+
+        /* Правила чтения */
+        .rule-card {
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
         }
-        .hangul-card .name {
-            font-size: 11px;
-            color: var(--tg-theme-hint-color);
-            display: block;
-        }
-        .hangul-card .sound {
-            font-size: 12px;
-            font-weight: 600;
+        .rule-card h4 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
             color: var(--tg-theme-link-color);
-            display: block;
-            margin-top: 2px;
         }
-        .hangul-card:active .name,
-        .hangul-card:active .sound {
-            color: inherit;
-            opacity: 0.8;
+        .rule-card p {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .rule-card .example {
+            background: var(--tg-theme-bg-color);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+        .rule-card .example .kr {
+            font-weight: bold;
+            color: var(--tg-theme-link-color);
+            font-size: 15px;
         }
     </style>
 </head>
@@ -145,6 +129,7 @@
     <div class="tabs">
         <button class="tab active" data-section="vocab">📚 Мои слова</button>
         <button class="tab" data-section="hangul">🔤 Хангыль</button>
+        <button class="tab" data-section="rules">📖 Правила</button>
     </div>
 
     <!-- Секция: Словарь -->
@@ -166,8 +151,83 @@
         </div>
 
         <div class="hangul-group">
+            <h3>Двойные согласные (5)</h3>
+            <div class="hangul-grid" id="double-consonants"></div>
+        </div>
+
+        <div class="hangul-group">
             <h3>Гласные (10 базовых)</h3>
             <div class="hangul-grid" id="vowels"></div>
+        </div>
+
+        <div class="hangul-group">
+            <h3>Составные гласные (11)</h3>
+            <div class="hangul-grid" id="compound-vowels"></div>
+        </div>
+    </div>
+
+    <!-- Секция: Правила чтения -->
+    <div id="rules" class="section">
+        <h2>Правила чтения</h2>
+        <p style="color: var(--tg-theme-hint-color); font-size: 14px; margin-top: -8px;">
+            Как буквы меняют звук в разных позициях
+        </p>
+
+        <div class="rule-card">
+            <h4>1. Пакчим (финаль)</h4>
+            <p>Когда слог заканчивается на согласный, он называется <b>пакчим</b>. Некоторые пакчим меняют звук:</p>
+            <div class="example">
+                <span class="kr">ㄱ, ㅋ, ㄲ</span> → [к]<br>
+                <span class="kr">ㄷ, ㅌ, ㅅ, ㅆ, ㅈ, ㅊ, ㅎ</span> → [т]<br>
+                <span class="kr">ㅂ, ㅍ</span> → [п]
+            </div>
+        </div>
+
+        <div class="rule-card">
+            <h4>2. Назализация</h4>
+            <p>Если после <span class="kr">ㄱ, ㄷ, ㅂ</span> идёт <span class="kr">ㄴ</span> или <span class="kr">ㅁ</span>, они читаются как <span class="kr">ㅇ</span> и <span class="kr">ㅁ</span>:</p>
+            <div class="example">
+                <span class="kr">국물</span> (кукмуль) → [kungмуль]<br>
+                <span class="kr">합니다</span> (хамнида) → [хамнида]
+            </div>
+        </div>
+
+        <div class="rule-card">
+            <h4>3. Ассимиляция (уподобление)</h4>
+            <p>Когда <span class="kr">ㄱ</span> встречается с <span class="kr">ㄴ</span>, он становится <span class="kr">ㅇ</span>:</p>
+            <div class="example">
+                <span class="kr">학년</span> (хангён) → [hangгён]<br>
+                <span class="kr">습니다</span> (сымнида) → [сымнида]
+            </div>
+        </div>
+
+        <div class="rule-card">
+            <h4>4. Придыхание</h4>
+            <p>Когда <span class="kr">ㅎ</span> встречается с <span class="kr">ㄱ, ㄷ, ㅂ, ㅈ</span>, они становятся придыхательными:</p>
+            <div class="example">
+                <span class="kr">좋다</span> (чотха) → [чотха]<br>
+                <span class="kr">않다</span> (антха) → [анта]
+            </div>
+        </div>
+
+        <div class="rule-card">
+            <h4>5. Сиот (ㅅ) перед иы (ㅣ)</h4>
+            <p>Когда <span class="kr">ㅅ</span> стоит перед <span class="kr">ㅣ</span>, он читается как <span class="kr">ㅅ</span> + <span class="kr">ㅣ</span> = [си]:</p>
+            <div class="example">
+                <span class="kr">시</span> (си) → [си]<br>
+                <span class="kr">식</span> (сик) → [сик]
+            </div>
+        </div>
+
+        <div class="rule-card">
+            <h4>6. Йотация</h4>
+            <p>Гласные <span class="kr">ㅑ, ㅕ, ㅛ, ㅠ</span> начинаются с звука [й]:</p>
+            <div class="example">
+                <span class="kr">야</span> (я) → [йа]<br>
+                <span class="kr">여</span> (ё) → [йо]<br>
+                <span class="kr">요</span> (ё) → [йо]<br>
+                <span class="kr">유</span> (ю) → [йу]
+            </div>
         </div>
     </div>
 
@@ -197,6 +257,14 @@
             { symbol: 'ㅎ', name: 'хиыт', sound: 'х' }
         ];
 
+        const doubleConsonants = [
+            { symbol: 'ㄲ', name: 'сангиёк', sound: 'кк' },
+            { symbol: 'ㄸ', name: 'ссандигыт', sound: 'тт' },
+            { symbol: 'ㅃ', name: 'ссанпиып', sound: 'пп' },
+            { symbol: 'ㅆ', name: 'ссансиот', sound: 'сс' },
+            { symbol: 'ㅉ', name: 'ссанчиыт', sound: 'чч' }
+        ];
+
         const vowels = [
             { symbol: 'ㅏ', name: 'а', sound: 'а' },
             { symbol: 'ㅑ', name: 'я', sound: 'я' },
@@ -210,10 +278,26 @@
             { symbol: 'ㅣ', name: 'и', sound: 'и' }
         ];
 
+        const compoundVowels = [
+            { symbol: 'ㅐ', name: 'э', sound: 'э' },
+            { symbol: 'ㅒ', name: 'йе', sound: 'йе' },
+            { symbol: 'ㅔ', name: 'е', sound: 'е' },
+            { symbol: 'ㅖ', name: 'йе', sound: 'йе' },
+            { symbol: 'ㅘ', name: 'ва', sound: 'ва' },
+            { symbol: 'ㅙ', name: 'вэ', sound: 'вэ' },
+            { symbol: 'ㅚ', name: 'ве', sound: 'ве' },
+            { symbol: 'ㅝ', name: 'во', sound: 'во' },
+            { symbol: 'ㅞ', name: 'ве', sound: 'ве' },
+            { symbol: 'ㅟ', name: 'ви', sound: 'ви' },
+            { symbol: 'ㅢ', name: 'ыи', sound: 'ыи' }
+        ];
+
         // ===== РЕНДЕР ХАНГЫЛЯ =====
         function renderHangul() {
             const consContainer = document.getElementById('consonants');
+            const doubleConsContainer = document.getElementById('double-consonants');
             const vowContainer = document.getElementById('vowels');
+            const compoundVowContainer = document.getElementById('compound-vowels');
 
             consonants.forEach(c => {
                 consContainer.innerHTML += `
@@ -225,8 +309,28 @@
                 `;
             });
 
+            doubleConsonants.forEach(c => {
+                doubleConsContainer.innerHTML += `
+                    <div class="hangul-card" onclick="tg.showAlert('${c.symbol} — ${c.name} (${c.sound})')">
+                        <span class="symbol">${c.symbol}</span>
+                        <span class="name">${c.name}</span>
+                        <span class="sound">[${c.sound}]</span>
+                    </div>
+                `;
+            });
+
             vowels.forEach(v => {
                 vowContainer.innerHTML += `
+                    <div class="hangul-card" onclick="tg.showAlert('${v.symbol} — ${v.name} (${v.sound})')">
+                        <span class="symbol">${v.symbol}</span>
+                        <span class="name">${v.name}</span>
+                        <span class="sound">[${v.sound}]</span>
+                    </div>
+                `;
+            });
+
+            compoundVowels.forEach(v => {
+                compoundVowContainer.innerHTML += `
                     <div class="hangul-card" onclick="tg.showAlert('${v.symbol} — ${v.name} (${v.sound})')">
                         <span class="symbol">${v.symbol}</span>
                         <span class="name">${v.name}</span>
