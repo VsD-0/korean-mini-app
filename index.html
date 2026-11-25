@@ -241,28 +241,28 @@
 
         // ===== ДАННЫЕ ХАНГЫЛЯ =====
         const consonants = [
-            { symbol: 'ㄱ', name: 'киёк', sound: 'г/к' },
-            { symbol: 'ㄴ', name: 'ниын', sound: 'н' },
-            { symbol: 'ㄷ', name: 'тигыт', sound: 'д/т' },
-            { symbol: 'ㄹ', name: 'риыль', sound: 'р/л' },
-            { symbol: 'ㅁ', name: 'миым', sound: 'м' },
-            { symbol: 'ㅂ', name: 'пиып', sound: 'б/п' },
-            { symbol: 'ㅅ', name: 'сиот', sound: 'с' },
-            { symbol: 'ㅇ', name: 'иын', sound: 'нг/—' },
-            { symbol: 'ㅈ', name: 'чиыт', sound: 'ч/дж' },
-            { symbol: 'ㅊ', name: 'чхиыт', sound: 'чх' },
-            { symbol: 'ㅋ', name: 'кхиык', sound: 'кх' },
-            { symbol: 'ㅌ', name: 'тхиыт', sound: 'тх' },
-            { symbol: 'ㅍ', name: 'пхиып', sound: 'пх' },
-            { symbol: 'ㅎ', name: 'хиыт', sound: 'х' }
+            { symbol: 'ㄱ', name: 'киёк', sound: 'г/к', tts: '가' },
+            { symbol: 'ㄴ', name: 'ниын', sound: 'н',   tts: '나' },
+            { symbol: 'ㄷ', name: 'тигыт', sound: 'д/т', tts: '다' },
+            { symbol: 'ㄹ', name: 'риыль', sound: 'р/л', tts: '라' },
+            { symbol: 'ㅁ', name: 'миым',  sound: 'м',   tts: '마' },
+            { symbol: 'ㅂ', name: 'пиып',  sound: 'б/п', tts: '바' },
+            { symbol: 'ㅅ', name: 'сиот',  sound: 'с',   tts: '사' },
+            { symbol: 'ㅇ', name: 'иын',   sound: 'нг/—',tts: '앙' },
+            { symbol: 'ㅈ', name: 'чиыт',  sound: 'ч/дж',tts: '자' },
+            { symbol: 'ㅊ', name: 'чхиыт', sound: 'чх',  tts: '차' },
+            { symbol: 'ㅋ', name: 'кхиык', sound: 'кх',  tts: '카' },
+            { symbol: 'ㅌ', name: 'тхиыт', sound: 'тх',  tts: '타' },
+            { symbol: 'ㅍ', name: 'пхиып', sound: 'пх',  tts: '파' },
+            { symbol: 'ㅎ', name: 'хиыт',  sound: 'х',   tts: '하' }
         ];
-
+        
         const doubleConsonants = [
-            { symbol: 'ㄲ', name: 'сангиёк', sound: 'кк' },
-            { symbol: 'ㄸ', name: 'ссандигыт', sound: 'тт' },
-            { symbol: 'ㅃ', name: 'ссанпиып', sound: 'пп' },
-            { symbol: 'ㅆ', name: 'ссансиот', sound: 'сс' },
-            { symbol: 'ㅉ', name: 'ссанчиыт', sound: 'чч' }
+            { symbol: 'ㄲ', name: 'сангиёк',   sound: 'кк', tts: '까' },
+            { symbol: 'ㄸ', name: 'ссандигыт', sound: 'тт', tts: '따' },
+            { symbol: 'ㅃ', name: 'ссанпиып',  sound: 'пп', tts: '빠' },
+            { symbol: 'ㅆ', name: 'ссансиот',  sound: 'сс', tts: '싸' },
+            { symbol: 'ㅉ', name: 'ссанчиыт',  sound: 'чч', tts: '짜' }
         ];
 
         const vowels = [
@@ -293,84 +293,84 @@
         ];
 
         // ===== КЭШ АУДИО =====
-const audioCache = {};
+        const audioCache = {};
+        
+        // Получаем текст для озвучки: слог для согласных, сам символ для гласных
+        function getTtsText(item) {
+            return item.tts || item.symbol;
+        }
+        
+        async function getAudioBlob(text) {
+            if (audioCache[text]) return audioCache[text];
+            const url = `${API_URL}/api/tts?text=${encodeURIComponent(text)}`;
+            const res = await fetch(url, {
+                headers: { 'ngrok-skip-browser-warning': 'true' }
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const blob = await res.blob();
+            audioCache[text] = URL.createObjectURL(blob);
+            return audioCache[text];
+        }
 
-async function getAudioBlob(symbol) {
-    if (audioCache[symbol]) return audioCache[symbol];
-    
-    const url = `${API_URL}/api/tts?text=${encodeURIComponent(symbol)}`;
-    const res = await fetch(url, {
-        headers: { 'ngrok-skip-browser-warning': 'true' }
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const blob = await res.blob();
-    audioCache[symbol] = URL.createObjectURL(blob);
-    return audioCache[symbol];
-}
-
-// ===== РЕНДЕР ХАНГЫЛЯ С ОЗВУЧКОЙ =====
-function renderHangul() {
-    const groups = [
-        ['consonants', consonants],
-        ['double-consonants', doubleConsonants],
-        ['vowels', vowels],
-        ['compound-vowels', compoundVowels]
-    ];
-
-    // Inline-подсказка под карточками
-    let hint = document.getElementById('hangul-hint');
-    if (!hint) {
-        hint = document.createElement('div');
-        hint.id = 'hangul-hint';
-        hint.style.cssText = 'position:sticky; bottom:0; background:var(--tg-theme-secondary-bg-color); padding:10px; border-radius:10px; margin-top:12px; font-size:14px; text-align:center; min-height:20px;';
-        document.getElementById('hangul').appendChild(hint);
-    }
-
-    groups.forEach(([containerId, items]) => {
-        const container = document.getElementById(containerId);
-        container.innerHTML = '';
-
-        items.forEach(item => {
-            const card = document.createElement('div');
-            card.className = 'hangul-card';
-            card.innerHTML = `
-                <span class="symbol">${item.symbol}</span>
-                <span class="name">${item.name}</span>
-                <span class="sound">[${item.sound}]</span>
-            `;
-
-            card.onclick = async () => {
-                // 1. Показываем информацию inline (НЕ через tg.showAlert!)
-                hint.innerHTML = `<b style="font-size:20px">${item.symbol}</b> — ${item.name} <span style="color:var(--tg-theme-link-color)">[${item.sound}]</span>`;
-                
-                // 2. Визуальная обратная связь
-                card.style.opacity = '0.5';
-
-                try {
-                    // 3. Получаем URL (из кэша или скачиваем)
-                    const audioUrl = await getAudioBlob(item.symbol);
+        // ===== РЕНДЕР ХАНГЫЛЯ С ОЗВУЧКОЙ =====
+        function renderHangul() {
+            const groups = [
+                ['consonants', consonants],
+                ['double-consonants', doubleConsonants],
+                ['vowels', vowels],
+                ['compound-vowels', compoundVowels]
+            ];
+        
+            // Inline-подсказка под карточками
+            let hint = document.getElementById('hangul-hint');
+            if (!hint) {
+                hint = document.createElement('div');
+                hint.id = 'hangul-hint';
+                hint.style.cssText = 'position:sticky; bottom:0; background:var(--tg-theme-secondary-bg-color); padding:10px; border-radius:10px; margin-top:12px; font-size:14px; text-align:center; min-height:20px;';
+                document.getElementById('hangul').appendChild(hint);
+            }
+        
+            groups.forEach(([containerId, items]) => {
+                const container = document.getElementById(containerId);
+                container.innerHTML = '';
+        
+                items.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'hangul-card';
+                    card.innerHTML = `
+                        <span class="symbol">${item.symbol}</span>
+                        <span class="name">${item.name}</span>
+                        <span class="sound">[${item.sound}]</span>
+                    `;
+        
+                    card.onclick = async () => {
+                        const ttsText = getTtsText(item);
+                        // Показываем и букву, и слог озвучки
+                        hint.innerHTML = `<b style="font-size:20px">${item.symbol}</b> — ${item.name} <span style="color:var(--tg-theme-link-color)">[${item.sound}]</span> <span style="opacity:.7">🔊 ${ttsText}</span>`;
+                        card.style.opacity = '0.5';
                     
-                    // 4. Воспроизводим
-                    const audio = new Audio(audioUrl);
-                    await audio.play();
-                } catch (error) {
-                    console.error('TTS error:', error);
-                    hint.innerHTML = `⚠️ Не удалось загрузить звук (${error.message})`;
-                } finally {
-                    card.style.opacity = '1';
-                }
-            };
-
-            container.appendChild(card);
-        });
-    });
-
-    // 5. Предзагружаем первые 5 букв при открытии таба — 
-    //    чтобы при первом клике не было задержки
-    setTimeout(() => {
-        consonants.slice(0, 5).forEach(c => getAudioBlob(c.symbol).catch(() => {}));
-    }, 500);
-}
+                        try {
+                            const audioUrl = await getAudioBlob(ttsText);
+                            const audio = new Audio(audioUrl);
+                            await audio.play();
+                        } catch (error) {
+                            console.error('TTS error:', error);
+                            hint.innerHTML = `⚠️ Не удалось загрузить звук (${error.message})`;
+                        } finally {
+                            card.style.opacity = '1';
+                        }
+                    };
+        
+                    container.appendChild(card);
+                });
+            });
+        
+            // 5. Предзагружаем первые 5 букв при открытии таба — 
+            //    чтобы при первом клике не было задержки
+            setTimeout(() => {
+                consonants.slice(0, 5).forEach(c => getAudioBlob(getTtsText(c)).catch(() => {}));
+            }, 500);
+        }
 
         // ===== ПЕРЕКЛЮЧЕНИЕ ТАБОВ =====
         document.querySelectorAll('.tab').forEach(tab => {
