@@ -292,52 +292,43 @@
             { symbol: 'ㅢ', name: 'ыи', sound: 'ыи' }
         ];
 
-        // ===== РЕНДЕР ХАНГЫЛЯ =====
+        // ===== РЕНДЕР ХАНГЫЛЯ С ОЗВУЧКОЙ =====
         function renderHangul() {
             const consContainer = document.getElementById('consonants');
             const doubleConsContainer = document.getElementById('double-consonants');
             const vowContainer = document.getElementById('vowels');
             const compoundVowContainer = document.getElementById('compound-vowels');
-
-            consonants.forEach(c => {
-                consContainer.innerHTML += `
-                    <div class="hangul-card" onclick="tg.showAlert('${c.symbol} — ${c.name} (${c.sound})')">
-                        <span class="symbol">${c.symbol}</span>
-                        <span class="name">${c.name}</span>
-                        <span class="sound">[${c.sound}]</span>
-                    </div>
+        
+            function createCard(item, container) {
+                const card = document.createElement('div');
+                card.className = 'hangul-card';
+                card.innerHTML = `
+                    <span class="symbol">${item.symbol}</span>
+                    <span class="name">${item.name}</span>
+                    <span class="sound">[${item.sound}]</span>
                 `;
-            });
-
-            doubleConsonants.forEach(c => {
-                doubleConsContainer.innerHTML += `
-                    <div class="hangul-card" onclick="tg.showAlert('${c.symbol} — ${c.name} (${c.sound})')">
-                        <span class="symbol">${c.symbol}</span>
-                        <span class="name">${c.name}</span>
-                        <span class="sound">[${c.sound}]</span>
-                    </div>
-                `;
-            });
-
-            vowels.forEach(v => {
-                vowContainer.innerHTML += `
-                    <div class="hangul-card" onclick="tg.showAlert('${v.symbol} — ${v.name} (${v.sound})')">
-                        <span class="symbol">${v.symbol}</span>
-                        <span class="name">${v.name}</span>
-                        <span class="sound">[${v.sound}]</span>
-                    </div>
-                `;
-            });
-
-            compoundVowels.forEach(v => {
-                compoundVowContainer.innerHTML += `
-                    <div class="hangul-card" onclick="tg.showAlert('${v.symbol} — ${v.name} (${v.sound})')">
-                        <span class="symbol">${v.symbol}</span>
-                        <span class="name">${v.name}</span>
-                        <span class="sound">[${v.sound}]</span>
-                    </div>
-                `;
-            });
+                
+                // При клике показываем подсказку и проигрываем аудио
+                card.onclick = async () => {
+                    tg.showAlert(`${item.symbol} — ${item.name} (${item.sound})`);
+                    
+                    // Пытаемся воспроизвести аудио
+                    try {
+                        const audioUrl = `${API_URL}/api/tts?text=${encodeURIComponent(item.symbol)}`;
+                        const audio = new Audio(audioUrl);
+                        audio.play().catch(err => console.log('Audio play failed:', err));
+                    } catch (error) {
+                        console.error('TTS error:', error);
+                    }
+                };
+                
+                container.appendChild(card);
+            }
+        
+            consonants.forEach(c => createCard(c, consContainer));
+            doubleConsonants.forEach(c => createCard(c, doubleConsContainer));
+            vowels.forEach(v => createCard(v, vowContainer));
+            compoundVowels.forEach(v => createCard(v, compoundVowContainer));
         }
 
         // ===== ПЕРЕКЛЮЧЕНИЕ ТАБОВ =====
