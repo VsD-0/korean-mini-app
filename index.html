@@ -73,7 +73,11 @@
 
         async function loadVocabulary() {
             try {
-                const response = await fetch(`${API_URL}/api/vocabulary?user_id=${userId}`);
+                const response = await fetch(`${API_URL}/api/vocabulary?user_id=${userId}`, {
+                    headers: {
+                        'ngrok-skip-browser-warning': 'true'
+                    }
+                });
                 if (!response.ok) throw new Error("Ошибка сети");
                 const words = await response.json();
 
