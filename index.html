@@ -135,6 +135,8 @@
     <!-- Секция: Словарь -->
     <div id="vocab" class="section active">
         <h2>Мои слова</h2>
+        <input type="text" id="search" placeholder="Поиск слова..." 
+           style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--tg-theme-hint-color); margin-bottom:12px;">
         <div id="vocab-content" class="loading">Загрузка данных...</div>
     </div>
 
@@ -382,6 +384,23 @@
             });
         });
 
+        let touchStartX = 0;
+            document.addEventListener('touchstart', e => {
+                touchStartX = e.touches[0].clientX;
+            });
+            document.addEventListener('touchend', e => {
+                const diff = touchStartX - e.changedTouches[0].clientX;
+                if (Math.abs(diff) > 50) {
+                    const tabs = document.querySelectorAll('.tab');
+                    const current = document.querySelector('.tab.active');
+                    const idx = Array.from(tabs).indexOf(current);
+                    const next = diff > 0 ? idx + 1 : idx - 1;
+                    if (next >= 0 && next < tabs.length) {
+                        tabs[next].click();
+                    }
+                }
+            });
+
         // ===== ЗАГРУЗКА СЛОВАРЯ =====
         async function loadVocabulary() {
             try {
@@ -406,6 +425,12 @@
                         <td>${w.translation}</td>
                         <td class="date">${dateStr}</td>
                     </tr>`;
+                    html += `<tr>
+                        <td class="kr-word">${w.word}</td>
+                        <td>${w.translation}</td>
+                        <td class="date">${dateStr}</td>
+                        <td><button onclick="playWord('${w.word}')">🔊</button></td>
+                    </tr>`;
                 });
                 html += `</table>`;
                 container.innerHTML = html;
@@ -415,6 +440,21 @@
                     `<p class="error">Ошибка загрузки.<br><small>${error.message}</small></p>`;
             }
         }
+        
+        function playWord(word) {
+            getAudioBlob(word).then(url => {
+                new Audio(url).play();
+            });
+        }
+
+        document.getElementById('search').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('#vocab-content tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        });
 
         // ===== ИНИЦИАЛИЗАЦИЯ =====
         renderHangul();
