@@ -159,6 +159,80 @@
           opacity: 0.5;
           cursor: not-allowed;
         }
+
+        /* Статистика */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--tg-theme-button-color);
+            display: block;
+            margin-bottom: 4px;
+        }
+        .stat-card .label {
+            font-size: 13px;
+            color: var(--tg-theme-hint-color);
+        }
+        .stat-card.streak .value {
+            color: #ff6b35;
+        }
+        
+        /* График */
+        .chart-container {
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+        .chart-container h3 {
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+        .chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            height: 120px;
+            gap: 8px;
+        }
+        .chart-bar {
+            flex: 1;
+            background: var(--tg-theme-button-color);
+            border-radius: 4px 4px 0 0;
+            min-height: 4px;
+            position: relative;
+            transition: height 0.3s;
+        }
+        .chart-bar .day {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            color: var(--tg-theme-hint-color);
+        }
+        .chart-bar .count {
+            position: absolute;
+            top: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--tg-theme-text-color);
+        }
             </style>
         </head>
         <body>
@@ -167,6 +241,7 @@
         <button class="tab active" data-section="vocab">📚 Мои слова</button>
         <button class="tab" data-section="hangul">🔤 Хангыль</button>
         <button class="tab" data-section="rules">📖 Правила</button>
+        <button class="tab" data-section="stats">📊 Статистика</button>
     </div>
 
     <!-- Секция: Словарь -->
@@ -268,6 +343,12 @@
                 <span class="kr">유</span> (ю) → [йу]
             </div>
         </div>
+    </div>
+
+    <!-- Секция: Статистика -->
+    <div id="stats" class="section">
+        <h2>Статистика обучения</h2>
+        <div id="stats-content" class="loading">Загрузка...</div>
     </div>
 
     <script>
@@ -520,9 +601,66 @@
         });
     });
 
+    // ===== ЗАГРУЗКА СТАТИСТИКИ =====
+    async function loadStats() {
+        try {
+            const response = await fetch(`${API_URL}/api/stats?user_id=${userId}`, {
+                headers: { 'ngrok-skip-browser-warning': 'true' }
+            });
+            if (!response.ok) throw new Error("Ошибка сети");
+            const stats = await response.json();
+    
+            const container = document.getElementById('stats-content');
+            container.innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="value">${stats.total}</span>
+                        <span class="label">Всего слов</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="value">${stats.due_today}</span>
+                        <span class="label">Повторить сегодня</span>
+                    </div>
+                    <div class="stat-card streak">
+                        <span class="value">${stats.streak} 🔥</span>
+                        <span class="label">Дней подряд</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="value">${Math.round((stats.total / 100) * 100)}%</span>
+                        <span class="label">Прогресс (цель: 100)</span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3>Прогресс за неделю</h3>
+                    <div class="chart" id="weekly-chart"></div>
+                </div>
+            `;
+    
+            // Рисуем график
+            const chart = document.getElementById('weekly-chart');
+            const maxCount = Math.max(...stats.weekly.map(d => d.count), 1);
+            stats.weekly.forEach(day => {
+                const height = (day.count / maxCount) * 100;
+                const bar = document.createElement('div');
+                bar.className = 'chart-bar';
+                bar.style.height = `${Math.max(height, 4)}%`;
+                bar.innerHTML = `
+                    <span class="count">${day.count}</span>
+                    <span class="day">${day.day}</span>
+                `;
+                chart.appendChild(bar);
+            });
+        } catch (error) {
+            console.error(error);
+            document.getElementById('stats-content').innerHTML = 
+                `<p class="error">Ошибка загрузки статистики.<br><small>${error.message}</small></p>`;
+        }
+    }
+        
     // ===== СТАРТ =====
     renderHangul();
     loadVocabulary();
+    loadStats();
     preloadHangulAudio();
 </script>
 </body>
