@@ -88,6 +88,12 @@
             background: var(--tg-theme-button-color);
             color: var(--tg-theme-button-text-color);
         }
+        .roman {
+            font-size: 12px;
+            color: var(--tg-theme-hint-color);
+            font-weight: 400;
+            letter-spacing: 0.3px;
+        }
         .hangul-card .symbol { font-size: 28px; font-weight: bold; display: block; margin-bottom: 4px; }
         .hangul-card .name { font-size: 11px; color: var(--tg-theme-hint-color); display: block; }
         .hangul-card .sound { font-size: 12px; font-weight: 600; color: var(--tg-theme-link-color); display: block; margin-top: 2px; }
@@ -361,6 +367,25 @@
         return m ? m[0] : '';
     }
 
+    // ===== РОМАНИЗАЦИЯ (Revised Romanization) =====
+    const INITIALS = ['g','kk','n','d','tt','r','m','b','pp','s','ss','','j','jj','ch','k','t','p','h'];
+    const MEDIALS  = ['a','ae','ya','yae','eo','e','yeo','ye','o','wa','wae','oe','yo','u','wo','we','wi','yu','eu','ui','i'];
+    const FINALS   = ['','k','kk','k','n','n','n','t','l','k','m','l','l','l','p','l','m','p','s','t','t','ng','t','t','t','t','p','t'];
+    
+    function romanize(word) {
+        let out = '';
+        for (const ch of word) {
+            const code = ch.codePointAt(0);
+            if (code < 0xAC00 || code > 0xD7A3) { out += ch; continue; } // не слог — оставляем как есть
+            const idx = code - 0xAC00;
+            const ini = Math.floor(idx / 588);
+            const med = Math.floor((idx % 588) / 28);
+            const fin = idx % 28;
+            out += INITIALS[ini] + MEDIALS[med] + FINALS[fin];
+        }
+        return out;
+    }
+
     // ===== РЕНДЕР ХАНГЫЛЯ =====
     function renderHangul() {
         const groups = [
@@ -393,7 +418,7 @@
                     const ttsText = item.tts || item.symbol;
                     hint.innerHTML = `<b style="font-size:20px">${item.symbol}</b> — ${item.name} ` +
                         `<span style="color:var(--tg-theme-link-color)">[${item.sound}]</span> ` +
-                        `<span style="opacity:.7">🔊 ${ttsText}</span>`;
+                        `<span style="opacity:.7">🔊 ${ttsText} (${romanize(ttsText)})</span>`;
                     if (!playFromCache(ttsText)) {
                         getAudioBlob(ttsText).then(() => playFromCache(ttsText));
                     }
@@ -422,11 +447,12 @@
                 <tr><th>Слово</th><th>Перевод</th><th>Повтор</th><th></th></tr>`;
             words.forEach(w => {
                 const korean = extractKorean(w.word) || extractKorean(w.translation);
+                const roman = romanize(korean || w.word);
                 const dateStr = w.next_review
                     ? w.next_review.split(/[T ]/)[0].split('-').reverse().join('.')
                     : '—';
                 html += `<tr>
-                    <td class="kr-word">${w.word}</td>
+                    <td class="kr-word">${w.word}<br><span class="roman">${roman}</span></td>
                     <td>${w.translation}</td>
                     <td class="date">${dateStr}</td>
                     <td>${korean ? `<button class="speak-btn" data-word="${korean}" title="Прослушать">🔊</button>` : ''}</td>
