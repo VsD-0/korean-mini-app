@@ -265,294 +265,239 @@
     </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
 
-        const userId = tg.initDataUnsafe?.user?.id || 9235360161;
-        const API_URL = "https://sunday-bot-yg41.onrender.com";
+    const userId = tg.initDataUnsafe?.user?.id || 9235360161;
+    const API_URL = "https://sunday-bot-yg41.onrender.com";
 
-        // ===== ДАННЫЕ ХАНГЫЛЯ =====
-        const consonants = [
-            { symbol: 'ㄱ', name: 'киёк', sound: 'г/к', tts: '가' },
-            { symbol: 'ㄴ', name: 'ниын', sound: 'н',   tts: '나' },
-            { symbol: 'ㄷ', name: 'тигыт', sound: 'д/т', tts: '다' },
-            { symbol: 'ㄹ', name: 'риыль', sound: 'р/л', tts: '라' },
-            { symbol: 'ㅁ', name: 'миым',  sound: 'м',   tts: '마' },
-            { symbol: 'ㅂ', name: 'пиып',  sound: 'б/п', tts: '바' },
-            { symbol: 'ㅅ', name: 'сиот',  sound: 'с',   tts: '사' },
-            { symbol: 'ㅇ', name: 'иын',   sound: 'нг/—',tts: '앙' },
-            { symbol: 'ㅈ', name: 'чиыт',  sound: 'ч/дж',tts: '자' },
-            { symbol: 'ㅊ', name: 'чхиыт', sound: 'чх',  tts: '차' },
-            { symbol: 'ㅋ', name: 'кхиык', sound: 'кх',  tts: '카' },
-            { symbol: 'ㅌ', name: 'тхиыт', sound: 'тх',  tts: '타' },
-            { symbol: 'ㅍ', name: 'пхиып', sound: 'пх',  tts: '파' },
-            { symbol: 'ㅎ', name: 'хиыт',  sound: 'х',   tts: '하' }
-        ];
-        
-        const doubleConsonants = [
-            { symbol: 'ㄲ', name: 'сангиёк',   sound: 'кк', tts: '까' },
-            { symbol: 'ㄸ', name: 'ссандигыт', sound: 'тт', tts: '따' },
-            { symbol: 'ㅃ', name: 'ссанпиып',  sound: 'пп', tts: '빠' },
-            { symbol: 'ㅆ', name: 'ссансиот',  sound: 'сс', tts: '싸' },
-            { symbol: 'ㅉ', name: 'ссанчиыт',  sound: 'чч', tts: '짜' }
-        ];
+    // ===== ДАННЫЕ ХАНГЫЛЯ =====
+    const consonants = [
+        { symbol: 'ㄱ', name: 'киёк', sound: 'г/к', tts: '가' },
+        { symbol: 'ㄴ', name: 'ниын', sound: 'н',   tts: '나' },
+        { symbol: 'ㄷ', name: 'тигыт', sound: 'д/т', tts: '다' },
+        { symbol: 'ㄹ', name: 'риыль', sound: 'р/л', tts: '라' },
+        { symbol: 'ㅁ', name: '미ым',  sound: 'м',   tts: '마' },
+        { symbol: 'ㅂ', name: 'пиып',  sound: 'б/п', tts: '바' },
+        { symbol: 'ㅅ', name: 'сиот',  sound: 'с',   tts: '사' },
+        { symbol: 'ㅇ', name: 'иын',   sound: 'нг/—',tts: '앙' },
+        { symbol: 'ㅈ', name: 'чиыт',  sound: 'ч/дж',tts: '자' },
+        { symbol: 'ㅊ', name: 'чхиыт', sound: 'чх',  tts: '차' },
+        { symbol: 'ㅋ', name: 'кхиык', sound: 'кх',  tts: '카' },
+        { symbol: 'ㅌ', name: 'тхиыт', sound: 'тх',  tts: '타' },
+        { symbol: 'ㅍ', name: 'пхиып', sound: 'пх',  tts: '파' },
+        { symbol: 'ㅎ', name: 'хиыт',  sound: 'х',   tts: '하' }
+    ];
+    const doubleConsonants = [
+        { symbol: 'ㄲ', name: 'сангиёк',   sound: 'кк', tts: '까' },
+        { symbol: 'ㄸ', name: 'ссандигыт', sound: 'тт', tts: '따' },
+        { symbol: 'ㅃ', name: 'ссанпиып',  sound: 'пп', tts: '빠' },
+        { symbol: 'ㅆ', name: 'ссансиот',  sound: 'сс', tts: '싸' },
+        { symbol: 'ㅉ', name: 'ссанчиыт',  sound: 'чч', tts: '짜' }
+    ];
+    const vowels = [
+        { symbol: 'ㅏ', name: 'а', sound: 'а' },
+        { symbol: 'ㅑ', name: 'я', sound: 'я' },
+        { symbol: 'ㅓ', name: 'о', sound: 'о' },
+        { symbol: 'ㅕ', name: 'ё', sound: 'ё' },
+        { symbol: 'ㅗ', name: 'о', sound: 'о' },
+        { symbol: 'ㅛ', name: 'ё', sound: 'ё' },
+        { symbol: 'ㅜ', name: 'у', sound: 'у' },
+        { symbol: 'ㅠ', name: 'ю', sound: 'ю' },
+        { symbol: 'ㅡ', name: 'ы', sound: 'ы' },
+        { symbol: 'ㅣ', name: 'и', sound: 'и' }
+    ];
+    const compoundVowels = [
+        { symbol: 'ㅐ', name: 'э', sound: 'э' },
+        { symbol: 'ㅒ', name: 'йе', sound: 'йе' },
+        { symbol: 'ㅔ', name: 'е', sound: 'е' },
+        { symbol: 'ㅖ', name: 'йе', sound: 'йе' },
+        { symbol: 'ㅘ', name: 'ва', sound: 'ва' },
+        { symbol: 'ㅙ', name: 'вэ', sound: 'вэ' },
+        { symbol: 'ㅚ', name: 'ве', sound: 'ве' },
+        { symbol: 'ㅝ', name: 'во', sound: 'во' },
+        { symbol: 'ㅞ', name: 'ве', sound: 'ве' },
+        { symbol: 'ㅟ', name: 'ви', sound: 'ви' },
+        { symbol: 'ㅢ', name: 'ыи', sound: 'ыи' }
+    ];
 
-        const vowels = [
-            { symbol: 'ㅏ', name: 'а', sound: 'а' },
-            { symbol: 'ㅑ', name: 'я', sound: 'я' },
-            { symbol: 'ㅓ', name: 'о', sound: 'о' },
-            { symbol: 'ㅕ', name: 'ё', sound: 'ё' },
-            { symbol: 'ㅗ', name: 'о', sound: 'о' },
-            { symbol: 'ㅛ', name: 'ё', sound: 'ё' },
-            { symbol: 'ㅜ', name: 'у', sound: 'у' },
-            { symbol: 'ㅠ', name: 'ю', sound: 'ю' },
-            { symbol: 'ㅡ', name: 'ы', sound: 'ы' },
-            { symbol: 'ㅣ', name: 'и', sound: 'и' }
-        ];
+    // ===== ОДИН АУДИО-КЭШ =====
+    const audioCache = {};
 
-        const compoundVowels = [
-            { symbol: 'ㅐ', name: 'э', sound: 'э' },
-            { symbol: 'ㅒ', name: 'йе', sound: 'йе' },
-            { symbol: 'ㅔ', name: 'е', sound: 'е' },
-            { symbol: 'ㅖ', name: 'йе', sound: 'йе' },
-            { symbol: 'ㅘ', name: 'ва', sound: 'ва' },
-            { symbol: 'ㅙ', name: 'вэ', sound: 'вэ' },
-            { symbol: 'ㅚ', name: 'ве', sound: 'ве' },
-            { symbol: 'ㅝ', name: 'во', sound: 'во' },
-            { symbol: 'ㅞ', name: 'ве', sound: 'ве' },
-            { symbol: 'ㅟ', name: 'ви', sound: 'ви' },
-            { symbol: 'ㅢ', name: 'ыи', sound: 'ыи' }
-        ];
-
-        // ===== КЭШ АУДИО =====
-        const audioCache = {};
-        
-        function getTtsText(item) {
-            return item.tts || item.symbol;
-        }
-
-        async function getAudioBlob(text) {
-          if (audioCache[text]) return audioCache[text];
-          const url = `${API_URL}/api/tts?text=${encodeURIComponent(text)}`;
-          const res = await fetch(url, {
+    async function getAudioBlob(text) {
+        if (audioCache[text]) return audioCache[text];
+        const url = `${API_URL}/api/tts?text=${encodeURIComponent(text)}`;
+        const res = await fetch(url, {
             headers: { 'ngrok-skip-browser-warning': 'true' }
-          });
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const blob = await res.blob();
-          audioCache[text] = URL.createObjectURL(blob);
-          return audioCache[text];
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const blob = await res.blob();
+        audioCache[text] = URL.createObjectURL(blob);
+        return audioCache[text];
+    }
+
+    function playFromCache(text) {
+        const url = audioCache[text];
+        if (!url) return false;
+        const audio = new Audio(url);
+        audio.play().catch(e => console.error('play blocked:', e));
+        return true;
+    }
+
+    // Предзагрузка звуков хангыля
+    async function preloadHangulAudio() {
+        const all = [...consonants, ...doubleConsonants, ...vowels, ...compoundVowels];
+        for (const item of all) {
+            const text = item.tts || item.symbol;
+            try { await getAudioBlob(text); } catch (e) { /* skip */ }
         }
-        
-        async function loadAudio(text) {
-            if (audioCache[text]) return audioCache[text];
-            const url = `${API_URL}/api/tts?text=${encodeURIComponent(text)}`;
-            const res = await fetch(url);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const blob = await res.blob();
-            audioCache[text] = URL.createObjectURL(blob);
-            return audioCache[text];
-        }
-        
-        // Синхронное воспроизведение из кэша — работает на iOS!
-        function playFromCache(text) {
-            const url = audioCache[text];
-            if (!url) return false;
-            const audio = new Audio(url);
-            audio.play().catch(e => console.error('play blocked:', e));
-            return true;
-        }
-        
-        // Предзагрузка ВСЕХ звуков хангыля (последовательно, чтобы не зафлудить Render)
-        async function preloadAllAudio() {
-            const all = [...consonants, ...doubleConsonants, ...vowels, ...compoundVowels];
-            for (const item of all) {
-                try { await loadAudio(getTtsText(item)); } catch (e) { /* пропускаем */ }
-            }
-            console.log('Аудио предзагружено:', Object.keys(audioCache).length);
+        console.log('Аудио хангыля предзагружено:', Object.keys(audioCache).length);
+    }
+
+    // ===== ИЗВЛЕЧЕНИЕ ХАНГЫЛЯ =====
+    function extractKorean(text) {
+        const m = (text || '').match(/[가-힣]+/);
+        return m ? m[0] : '';
+    }
+
+    // ===== РЕНДЕР ХАНГЫЛЯ =====
+    function renderHangul() {
+        const groups = [
+            ['consonants', consonants],
+            ['double-consonants', doubleConsonants],
+            ['vowels', vowels],
+            ['compound-vowels', compoundVowels]
+        ];
+
+        let hint = document.getElementById('hangul-hint');
+        if (!hint) {
+            hint = document.createElement('div');
+            hint.id = 'hangul-hint';
+            hint.style.cssText = 'position:sticky; bottom:0; background:var(--tg-theme-secondary-bg-color); padding:10px; border-radius:10px; margin-top:12px; font-size:14px; text-align:center; min-height:20px;';
+            document.getElementById('hangul').appendChild(hint);
         }
 
-        // ===== РЕНДЕР ХАНГЫЛЯ С ОЗВУЧКОЙ =====
-        function renderHangul() {
-            const groups = [
-                ['consonants', consonants],
-                ['double-consonants', doubleConsonants],
-                ['vowels', vowels],
-                ['compound-vowels', compoundVowels]
-            ];
-        
-            // Inline-подсказка под карточками
-            let hint = document.getElementById('hangul-hint');
-            if (!hint) {
-                hint = document.createElement('div');
-                hint.id = 'hangul-hint';
-                hint.style.cssText = 'position:sticky; bottom:0; background:var(--tg-theme-secondary-bg-color); padding:10px; border-radius:10px; margin-top:12px; font-size:14px; text-align:center; min-height:20px;';
-                document.getElementById('hangul').appendChild(hint);
-            }
-        
-            groups.forEach(([containerId, items]) => {
-                const container = document.getElementById(containerId);
-                container.innerHTML = '';
-        
-                items.forEach(item => {
-                    const card = document.createElement('div');
-                    card.className = 'hangul-card';
-                    card.innerHTML = `
-                        <span class="symbol">${item.symbol}</span>
-                        <span class="name">${item.name}</span>
-                        <span class="sound">[${item.sound}]</span>
-                    `;
-        
-                    card.onclick = () => {
-                        const ttsText = getTtsText(item);
-                        hint.innerHTML = `<b style="font-size:20px">${item.symbol}</b> — ${item.name} ` +
-                            `<span style="color:var(--tg-theme-link-color)">[${item.sound}]</span> ` +
-                            `<span style="opacity:.7">🔊 ${ttsText}</span>`;
-                    
-                        // Пытаемся сыграть синхронно из кэша
-                        if (!playFromCache(ttsText)) {
-                            // Если ещё не закэшировано — грузим и пробуем (на десктопе сработает)
-                            loadAudio(ttsText).then(() => playFromCache(ttsText));
-                        }
-                    };
-        
-                    container.appendChild(card);
-                });
-            });
-            preloadAllAudio();
-        }
-
-        // ===== ПЕРЕКЛЮЧЕНИЕ ТАБОВ =====
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-                tab.classList.add('active');
-                document.getElementById(tab.dataset.section).classList.add('active');
+        groups.forEach(([containerId, items]) => {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'hangul-card';
+                card.innerHTML = `
+                    <span class="symbol">${item.symbol}</span>
+                    <span class="name">${item.name}</span>
+                    <span class="sound">[${item.sound}]</span>
+                `;
+                card.onclick = () => {
+                    const ttsText = item.tts || item.symbol;
+                    hint.innerHTML = `<b style="font-size:20px">${item.symbol}</b> — ${item.name} ` +
+                        `<span style="color:var(--tg-theme-link-color)">[${item.sound}]</span> ` +
+                        `<span style="opacity:.7">🔊 ${ttsText}</span>`;
+                    if (!playFromCache(ttsText)) {
+                        getAudioBlob(ttsText).then(() => playFromCache(ttsText));
+                    }
+                };
+                container.appendChild(card);
             });
         });
+    }
 
-        let touchStartX = 0;
-            document.addEventListener('touchstart', e => {
-                touchStartX = e.touches[0].clientX;
-            });
-            document.addEventListener('touchend', e => {
-                const diff = touchStartX - e.changedTouches[0].clientX;
-                if (Math.abs(diff) > 50) {
-                    const tabs = document.querySelectorAll('.tab');
-                    const current = document.querySelector('.tab.active');
-                    const idx = Array.from(tabs).indexOf(current);
-                    const next = diff > 0 ? idx + 1 : idx - 1;
-                    if (next >= 0 && next < tabs.length) {
-                        tabs[next].click();
-                    }
-                }
-            });
-
-        // ===== ИЗВЛЕЧЕНИЕ ХАНГЫЛЯ =====
-        function extractKorean(text) {
-          const m = (text || '').match(/[가-힣]+/);
-          return m ? m[0] : '';
-        }
-        
-        // ===== ЗАГРУЗКА СЛОВАРЯ =====
-        async function loadVocabulary() {
-          try {
+    // ===== ЗАГРУЗКА СЛОВАРЯ =====
+    async function loadVocabulary() {
+        try {
             const response = await fetch(`${API_URL}/api/vocabulary?user_id=${userId}`, {
-              headers: { 'ngrok-skip-browser-warning': 'true' }
+                headers: { 'ngrok-skip-browser-warning': 'true' }
             });
             if (!response.ok) throw new Error("Ошибка сети");
             const words = await response.json();
-        
+
             const container = document.getElementById('vocab-content');
             if (words.length === 0) {
-              container.innerHTML = '<p class="empty">Словарь пуст. Добавьте слова в чате с ботом!</p>';
-              return;
+                container.innerHTML = '<p class="empty">Словарь пуст. Добавьте слова в чате с ботом!</p>';
+                return;
             }
-        
+
             let html = `<table>
-              <tr><th>Слово</th><th>Перевод</th><th>Повтор</th><th></th></tr>`;
+                <tr><th>Слово</th><th>Перевод</th><th>Повтор</th><th></th></tr>`;
             words.forEach(w => {
-              // Извлекаем корейское слово: сначала из колонки "word", если там нет — из "translation"
-              const korean = extractKorean(w.word) || extractKorean(w.translation);
-              const dateStr = w.next_review 
-                ? w.next_review.split(/[T ]/)[0].split('-').reverse().join('.') 
-                : '—';
-              html += `<tr>
-                <td class="kr-word">${w.word}</td>
-                <td>${w.translation}</td>
-                <td class="date">${dateStr}</td>
-                <td>${korean ? `<button class="speak-btn" data-word="${korean}" title="Прослушать">🔊</button>` : ''}</td>
-              </tr>`;
+                const korean = extractKorean(w.word) || extractKorean(w.translation);
+                const dateStr = w.next_review
+                    ? w.next_review.split(/[T ]/)[0].split('-').reverse().join('.')
+                    : '—';
+                html += `<tr>
+                    <td class="kr-word">${w.word}</td>
+                    <td>${w.translation}</td>
+                    <td class="date">${dateStr}</td>
+                    <td>${korean ? `<button class="speak-btn" data-word="${korean}" title="Прослушать">🔊</button>` : ''}</td>
+                </tr>`;
             });
             html += `</table>`;
             container.innerHTML = html;
-        
-            // Навешиваем обработчики на все кнопки озвучки
-            document.querySelectorAll('.speak-btn').forEach(btn => {
-              btn.onclick = async () => {
-                const word = btn.dataset.word;
-                btn.style.opacity = '0.5';
-                try {
-                  const audioUrl = await getAudioBlob(word);
-                  const audio = new Audio(audioUrl);
-                  await audio.play();
-                } catch (error) {
-                  console.error('TTS error:', error);
-                  btn.textContent = '⚠️';
-                  setTimeout(() => btn.textContent = '🔊', 2000);
-                } finally {
-                  btn.style.opacity = '1';
-                }
-              };
-            });
-          } catch (error) {
+        } catch (error) {
             console.error(error);
-            document.getElementById('vocab-content').innerHTML = 
-              `<p class="error">Ошибка загрузки.<br><small>${error.message}</small></p>`;
-          }
+            document.getElementById('vocab-content').innerHTML =
+                `<p class="error">Ошибка загрузки.<br><small>${error.message}</small></p>`;
         }
+    }
 
-        document.querySelectorAll('.speak-btn').forEach(btn => {
-          btn.onclick = async () => {
-            try {
-              const audioUrl = await getAudioBlob(btn.dataset.text);
-              const audio = new Audio(audioUrl);
-              await audio.play();
-            } catch (e) {
-              console.error('TTS error:', e);
-            }
-          };
-        });
-        
-        // Делегирование: клик по любой кнопке озвучки
-        document.getElementById('vocab-content').addEventListener('click', (e) => {
-            const btn = e.target.closest('.speak-btn');
-            if (!btn) return;
-            const word = btn.dataset.word;
+    // ===== ЕДИНЫЙ ОБРАБОТЧИК ОЗВУЧКИ (делегирование) =====
+    document.getElementById('vocab-content').addEventListener('click', async (e) => {
+        const btn = e.target.closest('.speak-btn');
+        if (!btn) return;
+        const word = btn.dataset.word;
+        if (!word) return;
+        btn.style.opacity = '0.5';
+        try {
             if (!playFromCache(word)) {
-                loadAudio(word).then(() => playFromCache(word));
+                await getAudioBlob(word);
+                playFromCache(word);
             }
-        });
-        
-        function playWord(word) {
-            getAudioBlob(word).then(url => {
-                new Audio(url).play();
-            });
+        } catch (err) {
+            console.error('TTS error:', err);
+            btn.textContent = '⚠️';
+            setTimeout(() => btn.textContent = '🔊', 2000);
+        } finally {
+            btn.style.opacity = '1';
         }
+    });
 
-        document.getElementById('search').addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase();
-            const rows = document.querySelectorAll('#vocab-content tr');
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(query) ? '' : 'none';
-            });
+    // ===== ПЕРЕКЛЮЧЕНИЕ ТАБОВ =====
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById(tab.dataset.section).classList.add('active');
         });
+    });
 
-        // ===== ИНИЦИАЛИЗАЦИЯ =====
-        renderHangul();
-        loadVocabulary();
-    </script>
+    // ===== СВАЙПЫ =====
+    let touchStartX = 0;
+    document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
+    document.addEventListener('touchend', e => {
+        const diff = touchStartX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 50) {
+            const tabs = document.querySelectorAll('.tab');
+            const current = document.querySelector('.tab.active');
+            const idx = Array.from(tabs).indexOf(current);
+            const next = diff > 0 ? idx + 1 : idx - 1;
+            if (next >= 0 && next < tabs.length) tabs[next].click();
+        }
+    });
+
+    // ===== ПОИСК =====
+    document.getElementById('search').addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        document.querySelectorAll('#vocab-content tr').forEach(row => {
+            row.style.display = row.textContent.toLowerCase().includes(query) ? '' : 'none';
+        });
+    });
+
+    // ===== СТАРТ =====
+    renderHangul();
+    loadVocabulary();
+    preloadHangulAudio();
+</script>
 </body>
 </html>
