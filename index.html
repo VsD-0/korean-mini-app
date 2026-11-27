@@ -83,31 +83,35 @@
 
         /* Табы */
         .tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-            position: sticky;
-            top: 0;
-            background: var(--tg-theme-bg-color);
-            padding: 8px 0;
-            z-index: 10;
-        }
-        .tab {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 10px;
-            background: var(--tg-theme-secondary-bg-color);
-            color: var(--tg-theme-text-color);
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .tab.active {
-            background: var(--tg-theme-button-color);
-            color: var(--tg-theme-button-text-color);
-        }
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    position: sticky;
+    top: 0;
+    background: var(--tg-theme-bg-color);
+    padding: 8px 0;
+    z-index: 10;
+    overflow-x: auto;
+}
+.tab {
+    flex: 1;
+    min-width: 80px;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    background: var(--tg-theme-secondary-bg-color);
+    color: var(--tg-theme-text-color);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.tab.active {
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+}
+    
 
         /* Секции */
         .section { display: none; }
@@ -697,6 +701,104 @@ tg.onEvent('themeChanged', applyTheme);
         { symbol: 'ㅢ', name: 'ыи', sound: 'ыи' }
     ];
 
+const grammarTopics = [
+    {
+        title: "1. Частицы темы и подлежащего (은/는, 이/가)",
+        content: "В корейском языке есть две частицы, которые указывают на тему или подлежащее предложения. Выбор зависит от того, заканчивается ли слово на согласный или гласный.",
+        pattern: "Согласный + 은/는 | Гласный + 이/가",
+        examples: [
+            { kr: "저는", ru: "я (тема)" },
+            { kr: "학생은", ru: "студент (тема)" },
+            { kr: "내가", ru: "я (подлежащее)" },
+            { kr: "사과가", ru: "яблоко (подлежащее)" }
+        ],
+        note: "은/는 — для темы (о чём говорим), 이/가 — для подлежащего (кто делает действие)"
+    },
+    {
+        title: "2. Частица дополнения (을/를)",
+        content: "Указывает на прямое дополнение — объект, на который направлено действие.",
+        pattern: "Согласный + 을 | Гласный + 를",
+        examples: [
+            { kr: "밥을", ru: "рис (ем)" },
+            { kr: "물을", ru: "воду (пью)" },
+            { kr: "사과를", ru: "яблоко (ем)" },
+            { kr: "책을", ru: "книгу (читаю)" }
+        ],
+        note: "Аналог винительного падежа в русском"
+    },
+    {
+        title: "3. Спряжение глаголов (아/어요)",
+        content: "Вежливая форма настоящего времени. Окончание зависит от последней гласной основы глагола.",
+        pattern: "Гласные ㅏ, ㅗ + 아요 | Остальные + 어요 | 하다 → 해요",
+        examples: [
+            { kr: "가다 → 가요", ru: "идти" },
+            { kr: "먹다 → 먹어요", ru: "есть" },
+            { kr: "하다 → 해요", ru: "делать" },
+            { kr: "보다 → 봐요", ru: "смотреть" }
+        ],
+        note: "Самая распространённая форма вежливой речи"
+    },
+    {
+        title: "4. Прошедшее время (았/었어요)",
+        content: "Образуется добавлением окончаний прошедшего времени к основе глагола.",
+        pattern: "Гласные ㅏ, ㅗ + 았어요 | Остальные + 었어요 | 하다 → 했어요",
+        examples: [
+            { kr: "갔다", ru: "пошёл" },
+            { kr: "먹었어요", ru: "поел" },
+            { kr: "했어요", ru: "сделал" },
+            { kr: "봤어요", ru: "посмотрел" }
+        ],
+        note: "Аналог прошедшего времени в русском"
+    },
+    {
+        title: "5. Будущее время (ㄹ/을 거예요)",
+        content: "Выражает намерение или предположение о будущем действии.",
+        pattern: "Без пакчима + ㄹ 거예요 | С пакчимом + 을 거예요",
+        examples: [
+            { kr: "갈 거예요", ru: "пойду" },
+            { kr: "먹을 거예요", ru: "буду есть" },
+            { kr: "할 거예요", ru: "буду делать" },
+            { kr: "볼 거예요", ru: "буду смотреть" }
+        ],
+        note: "Также может выражать предположение: 'наверное, сделает'"
+    },
+    {
+        title: "6. Частица направления (에/에게)",
+        content: "Указывает на направление действия или адресата.",
+        pattern: "Место + 에 | Человек + 에게/한테",
+        examples: [
+            { kr: "학교에", ru: "в школу" },
+            { kr: "집에", ru: "домой" },
+            { kr: "친구에게", ru: "другу" },
+            { kr: "선생님께", ru: "учителю (вежливо)" }
+        ],
+        note: "에 — для мест, 에게/한테 — для людей"
+    },
+    {
+        title: "7. Частица инструмента (으로/로)",
+        content: "Указывает на инструмент, способ или направление.",
+        pattern: "С пакчимом + 으로 | Без пакчима + 로",
+        examples: [
+            { kr: "칼로", ru: "ножом" },
+            { kr: "버스로", ru: "на автобусе" },
+            { kr: "한국어로", ru: "по-корейски" },
+            { kr: "왼쪽으로", ru: "налево" }
+        ],
+        note: "Аналог творительного падежа"
+    },
+    {
+        title: "8. Отрицание (안/못)",
+        content: "Два способа отрицания: 안 — не делать (по желанию), 못 — не мочь (по обстоятельствам).",
+        pattern: "안 + глагол | глагол + 지 않다",
+        examples: [
+            { kr: "안 먹어요", ru: "не ем" },
+            { kr: "못 먹어요", ru: "не могу есть" },
+            { kr: "안 가요", ru: "не иду" },
+            { kr: "못 가요", ru: "не могу идти" }
+        ],
+        note: "안 — субъективное отрицание, 못 — объективное"
+    }
+];
     // ===== ОДИН АУДИО-КЭШ =====
     const audioCache = {};
 
@@ -835,7 +937,56 @@ tg.onEvent('themeChanged', applyTheme);
                 `<p class="error">Ошибка загрузки.<br><small>${error.message}</small></p>`;
         }
     }
+function renderGrammar() {
+    const container = document.getElementById('grammar-content');
+    container.innerHTML = '';
 
+    grammarTopics.forEach(topic => {
+        const card = document.createElement('div');
+        card.className = 'grammar-card';
+        
+        let examplesHtml = topic.examples.map(ex => {
+            const ttsText = ex.kr.split('→')[0].trim();
+            return `
+                <div class="example-row">
+                    <span class="kr">${ex.kr}</span>
+                    <span>— ${ex.ru}</span>
+                    <button class="speak-btn" data-text="${ttsText}">🔊</button>
+                </div>
+            `;
+        }).join('');
+
+        card.innerHTML = `
+            <h4>${topic.title}</h4>
+            <p>${topic.content}</p>
+            <div class="pattern">${topic.pattern}</div>
+            <div class="example">
+                ${examplesHtml}
+            </div>
+            ${topic.note ? `<div class="note">💡 ${topic.note}</div>` : ''}
+        `;
+
+        container.appendChild(card);
+    });
+
+    // Обработчики кнопок озвучки
+    container.querySelectorAll('.speak-btn').forEach(btn => {
+        btn.onclick = async () => {
+            const text = btn.dataset.text;
+            btn.disabled = true;
+            try {
+                if (!playFromCache(text)) {
+                    await getAudioBlob(text);
+                    playFromCache(text);
+                }
+            } catch (err) {
+                console.error('TTS error:', err);
+            } finally {
+                btn.disabled = false;
+            }
+        };
+    });
+}
     // ===== ЕДИНЫЙ ОБРАБОТЧИК ОЗВУЧКИ (делегирование) =====
     document.getElementById('vocab-content').addEventListener('click', async (e) => {
         const btn = e.target.closest('.speak-btn');
@@ -1051,6 +1202,7 @@ async function markCard(isCorrect) {
         
     // ===== СТАРТ =====
     renderHangul();
+renderGrammar();
     loadCards();
     loadVocabulary();
     loadStats();
