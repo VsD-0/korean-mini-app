@@ -622,6 +622,104 @@
     font-size: 18px;
     margin-bottom: 24px;
 }
+/* Ежедневный челлендж */
+.challenge-widget {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    color: white;
+}
+.challenge-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.challenge-title {
+    font-size: 18px;
+    font-weight: bold;
+}
+.challenge-points {
+    background: rgba(255,255,255,0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+}
+.challenge-progress {
+    background: rgba(255,255,255,0.3);
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+.challenge-progress-bar {
+    height: 100%;
+    background: white;
+    border-radius: 4px;
+    transition: width 0.3s;
+}
+.challenge-task {
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+}
+.challenge-task-label {
+    font-size: 12px;
+    opacity: 0.8;
+    margin-bottom: 8px;
+}
+.challenge-task-text {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+.challenge-task-hint {
+    font-size: 13px;
+    opacity: 0.9;
+}
+.challenge-btn {
+    background: white;
+    color: #667eea;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.2s;
+}
+.challenge-btn:active {
+    transform: scale(0.98);
+}
+.challenge-btn:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+.challenge-complete {
+    text-align: center;
+    padding: 20px;
+}
+.challenge-complete .emoji {
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+.challenge-reward {
+    background: rgba(255,215,0,0.3);
+    border: 2px solid gold;
+    border-radius: 12px;
+    padding: 12px;
+    margin-top: 12px;
+    text-align: center;
+}
+.challenge-reward .points {
+    font-size: 24px;
+    font-weight: bold;
+    color: gold;
+}
             </style>
         </head>
         <body>
@@ -634,6 +732,7 @@
 <button class="tab" data-section="grammar">📝 Грамматика</button>
 <button class="tab" data-section="phrases">✈️ Фразы</button>
 <button class="tab" data-section="quiz">🎯 Тесты</button>
+<button class="tab" data-section="challenge">🏆 Челлендж</button>
         <button class="tab" data-section="stats">📊 Статистика</button>
     </div>
 
@@ -774,6 +873,11 @@
         </div>
     </div>
 </div>
+<!-- Секция: Челлендж -->
+<div id="challenge" class="section">
+    <h2>Ежедневный челлендж</h2>
+    <div id="challenge-content" class="loading">Загрузка...</div>
+</div>
     <!-- Секция: Статистика -->
     <div id="stats" class="section">
         <h2>Статистика обучения</h2>
@@ -812,6 +916,9 @@ tg.onEvent('themeChanged', applyTheme);
     const API_URL = "https://sunday-bot-yg41.onrender.com";
 
 let allVocabWords = []; // Хранилище слов для тестов
+let challengePoints = 0;
+let challengeTasksCompleted = 0;
+const DAILY_GOAL = 3; // заданий в день
 
     // ===== ДАННЫЕ ХАНГЫЛЯ =====
     const consonants = [
@@ -1402,6 +1509,150 @@ function showQuizResults() {
         </div>
     `;
 }
+// ===== ЕЖЕДНЕВНЫЙ ЧЕЛЛЕНДЖ =====
+const challengeTasks = [
+    { type: 'translate', text: 'Переведите слово', getWord: () => {
+        if (allVocabWords.length === 0) return null;
+        const w = allVocabWords[Math.floor(Math.random() * allVocabWords.length)];
+        return { q: w.word, a: w.translation };
+    }},
+    { type: 'phrase', text: 'Что означает эта фраза?', getWord: () => {
+        const allPhrases = phraseCategories.flatMap(c => c.phrases);
+        const p = allPhrases[Math.floor(Math.random() * allPhrases.length)];
+        return { q: p.kr, a: p.ru };
+    }},
+    { type: 'hangul', text: 'Как читается этот слог?', getWord: () => {
+        const allHangul = [...consonants, ...doubleConsonants];
+        const h = allHangul[Math.floor(Math.random() * allHangul.length)];
+        return { q: h.tts, a: h.sound };
+    }}
+];
+
+let currentChallengeTask = null;
+
+function loadChallenge() {
+    // Загружаем прогресс из localStorage
+    const today = new Date().toDateString();
+    const saved = localStorage.getItem('challenge_progress');
+    
+    if (saved) {
+        const data = JSON.parse(saved);
+        if (data.date === today) {
+            challengePoints = data.points || 0;
+            challengeTasksCompleted = data.completed || 0;
+        } else {
+            // Новый день — сброс
+            challengePoints = 0;
+            challengeTasksCompleted = 0;
+        }
+    }
+    
+    renderChallenge();
+}
+
+function renderChallenge() {
+    const container = document.getElementById('challenge-content');
+    const progress = (challengeTasksCompleted / DAILY_GOAL) * 100;
+    
+    if (challengeTasksCompleted >= DAILY_GOAL) {
+        container.innerHTML = `
+            <div class="challenge-complete">
+                <div class="emoji">🎉</div>
+                <h3>Цель выполнена!</h3>
+                <p>Вы выполнили все задания на сегодня</p>
+                <div class="challenge-reward">
+                    <div class="points">+${challengePoints} очков</div>
+                    <div style="font-size:13px; margin-top:4px;">Продолжайте серию! 🔥</div>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    // Генерируем случайное задание
+    const taskType = challengeTasks[Math.floor(Math.random() * challengeTasks.length)];
+    const word = taskType.getWord();
+    
+    if (!word) {
+        container.innerHTML = `<p class="error">Недостаточно данных для задания. Добавьте слова в словарь!</p>`;
+        return;
+    }
+    
+    currentChallengeTask = { ...word, type: taskType.type };
+    
+    container.innerHTML = `
+        <div class="challenge-widget">
+            <div class="challenge-header">
+                <div class="challenge-title">🎯 Цель на сегодня</div>
+                <div class="challenge-points">⭐ ${challengePoints} очков</div>
+            </div>
+            <div class="challenge-progress">
+                <div class="challenge-progress-bar" style="width: ${progress}%"></div>
+            </div>
+            <div style="font-size:13px; opacity:0.9; margin-bottom:16px;">
+                Выполнено: ${challengeTasksCompleted} / ${DAILY_GOAL}
+            </div>
+            
+            <div class="challenge-task">
+                <div class="challenge-task-label">${taskType.text}</div>
+                <div class="challenge-task-text">${word.q}</div>
+                <div class="challenge-task-hint">Нажмите кнопку ниже, чтобы увидеть ответ</div>
+            </div>
+            
+            <button class="challenge-btn" onclick="completeChallengeTask()">
+                ✅ Выполнить задание (+10 очков)
+            </button>
+        </div>
+    `;
+}
+
+function completeChallengeTask() {
+    if (!currentChallengeTask) return;
+    
+    challengeTasksCompleted++;
+    challengePoints += 10;
+    
+    // Сохраняем прогресс
+    const today = new Date().toDateString();
+    localStorage.setItem('challenge_progress', JSON.stringify({
+        date: today,
+        points: challengePoints,
+        completed: challengeTasksCompleted
+    }));
+    
+    // Показываем ответ
+    const container = document.getElementById('challenge-content');
+    container.innerHTML = `
+        <div class="challenge-widget">
+            <div class="challenge-header">
+                <div class="challenge-title">✅ Правильно!</div>
+                <div class="challenge-points">⭐ ${challengePoints} очков</div>
+            </div>
+            <div class="challenge-progress">
+                <div class="challenge-progress-bar" style="width: ${(challengeTasksCompleted / DAILY_GOAL) * 100}%"></div>
+            </div>
+            <div style="font-size:13px; opacity:0.9; margin-bottom:16px;">
+                Выполнено: ${challengeTasksCompleted} / ${DAILY_GOAL}
+            </div>
+            
+            <div class="challenge-task">
+                <div class="challenge-task-label">Ответ:</div>
+                <div class="challenge-task-text">${currentChallengeTask.a}</div>
+            </div>
+            
+            ${challengeTasksCompleted >= DAILY_GOAL ? `
+                <div class="challenge-reward">
+                    <div class="points">🎉 Цель выполнена!</div>
+                    <div style="font-size:13px; margin-top:4px;">+${challengePoints} очков за сегодня</div>
+                </div>
+            ` : `
+                <button class="challenge-btn" onclick="renderChallenge()">
+                    Следующее задание →
+                </button>
+            `}
+        </div>
+    `;
+}
     // ===== ЕДИНЫЙ ОБРАБОТЧИК ОЗВУЧКИ (делегирование) =====
     document.getElementById('vocab-content').addEventListener('click', async (e) => {
         const btn = e.target.closest('.speak-btn');
@@ -1620,6 +1871,7 @@ async function markCard(isCorrect) {
 renderGrammar();
 renderPhrases();
     loadCards();
+loadChallenge(); 
     loadVocabulary();
     loadStats();
     preloadHangulAudio();
