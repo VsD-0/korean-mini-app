@@ -851,6 +851,82 @@ const grammarTopics = [
         note: "안 — субъективное отрицание, 못 — объективное"
     }
 ];
+const phraseCategories = [
+    {
+        title: "👋 Приветствия и вежливость",
+        phrases: [
+            { kr: "안녕하세요", roman: "аннёнхасэё", ru: "Здравствуйте" },
+            { kr: "감사합니다", roman: "камсахамнида", ru: "Спасибо" },
+            { kr: "죄송합니다", roman: "чвэсонхамнида", ru: "Извините" },
+            { kr: "안녕히 가세요", roman: "аннёнхи касэё", ru: "До свидания (уходящему)" },
+            { kr: "안녕히 계세요", roman: "аннёнхи кесэё", ru: "До свидания (остающемуся)" },
+            { kr: "네", roman: "нэ", ru: "Да" },
+            { kr: "아니요", roman: "аниё", ru: "Нет" }
+        ]
+    },
+    {
+        title: "🍽️ В ресторане",
+        phrases: [
+            { kr: "이거 주세요", roman: "иго чусэё", ru: "Дайте это, пожалуйста" },
+            { kr: "메뉴 주세요", roman: "меню чусэё", ru: "Меню, пожалуйста" },
+            { kr: "물 주세요", roman: "муль чусэё", ru: "Воды, пожалуйста" },
+            { kr: "계산서 주세요", roman: "кесансо чусэё", ru: "Счёт, пожалуйста" },
+            { kr: "맛있어요", roman: "масиссоё", ru: "Вкусно" },
+            { kr: "예약했어요", roman: "йеякхэссоё", ru: "У меня бронь" }
+        ]
+    },
+    {
+        title: "🚌 Транспорт",
+        phrases: [
+            { kr: "여기서 내려주세요", roman: "ёгисо нэрёджусэё", ru: "Остановите здесь" },
+            { kr: "택시 불러주세요", roman: "тхакси пульлёджусэё", ru: "Вызовите такси" },
+            { kr: "여기가 어디예요?", roman: "ёгига одиэё?", ru: "Где это?" },
+            { kr: "역이 어디예요?", roman: "ёги одиэё?", ru: "Где станция?" },
+            { kr: "얼마예요?", roman: "ольмаэё?", ru: "Сколько стоит?" },
+            { kr: "카드 돼요?", roman: "кхады твэё?", ru: "Можно картой?" }
+        ]
+    },
+    {
+        title: "🏨 Отель",
+        phrases: [
+            { kr: "예약했어요", roman: "йеякхэссоё", ru: "У меня бронь" },
+            { kr: "체크인 할게요", roman: "чхекхин хальгеё", ru: "Я на регистрацию" },
+            { kr: "와이파이 비밀번호 뭐예요?", roman: "вапхаи бимильбонхо мвоэё?", ru: "Какой пароль от Wi-Fi?" },
+            { kr: "조식 포함이에요?", roman: "чосик пхомнимидэё?", ru: "Завтрак включён?" },
+            { kr: "수건 더 주세요", roman: "сугон то чусэё", ru: "Дайте ещё полотенце" }
+        ]
+    },
+    {
+        title: "🛍️ Покупки",
+        phrases: [
+            { kr: "이거 얼마예요?", roman: "иго ольмаэё?", ru: "Сколько это стоит?" },
+            { kr: "좀 깎아 주세요", roman: "чом ккакка чусэё", ru: "Сделайте скидку" },
+            { kr: "이거 있어요?", roman: "иго иссоё?", ru: "Это есть?" },
+            { kr: "다른 거 있어요?", roman: "тарын ко иссоё?", ru: "Есть другое?" },
+            { kr: "봉투 주세요", roman: "понгтху чусэё", ru: "Пакет, пожалуйста" }
+        ]
+    },
+    {
+        title: "🆘 Экстренные ситуации",
+        phrases: [
+            { kr: "도와주세요!", roman: "товаджусэё!", ru: "Помогите!" },
+            { kr: "경찰 불러주세요", roman: "кёнчхаль пульлёджусэё", ru: "Вызовите полицию" },
+            { kr: "병원이 어디예요?", roman: "пёнвони одиэё?", ru: "Где больница?" },
+            { kr: "아파요", roman: "апаё", ru: "Мне плохо" },
+            { kr: "러시아 대사관 어디예요?", roman: "росиа тэсагван одиэё?", ru: "Где посольство России?" }
+        ]
+    },
+    {
+        title: "🗣️ Знакомство",
+        phrases: [
+            { kr: "처음 뵙겠습니다", roman: "чодым пвэпкетымнида", ru: "Приятно познакомиться" },
+            { kr: "이름이 뭐예요?", roman: "ырыми мвоэё?", ru: "Как вас зовут?" },
+            { kr: "제 이름은...", roman: "че ырым ын...", ru: "Меня зовут..." },
+            { kr: "러시아에서 왔어요", roman: "росиэсо вассоё", ru: "Я из России" },
+            { kr: "한국어를 조금 해요", roman: "хангуго рыл чогым хэё", ru: "Я немного говорю по-корейски" }
+        ]
+    }
+];
     // ===== ОДИН АУДИО-КЭШ =====
     const audioCache = {};
 
@@ -950,7 +1026,51 @@ const grammarTopics = [
             });
         });
     }
+function renderPhrases() {
+    const container = document.getElementById('phrases-content');
+    container.innerHTML = '';
 
+    phraseCategories.forEach(category => {
+        const catDiv = document.createElement('div');
+        catDiv.className = 'phrase-category';
+
+        let phrasesHtml = category.phrases.map(p => `
+            <div class="phrase-card">
+                <div class="phrase-text">
+                    <div class="phrase-kr">${p.kr}</div>
+                    <div class="phrase-roman">[${p.roman}]</div>
+                    <div class="phrase-ru">${p.ru}</div>
+                </div>
+                <button class="speak-btn phrase-speak" data-text="${p.kr}">🔊</button>
+            </div>
+        `).join('');
+
+        catDiv.innerHTML = `
+            <h3>${category.title}</h3>
+            ${phrasesHtml}
+        `;
+
+        container.appendChild(catDiv);
+    });
+
+    // Обработчики озвучки
+    container.querySelectorAll('.speak-btn').forEach(btn => {
+        btn.onclick = async () => {
+            const text = btn.dataset.text;
+            btn.disabled = true;
+            try {
+                if (!playFromCache(text)) {
+                    await getAudioBlob(text);
+                    playFromCache(text);
+                }
+            } catch (err) {
+                console.error('TTS error:', err);
+            } finally {
+                btn.disabled = false;
+            }
+        };
+    });
+}
     // ===== ЗАГРУЗКА СЛОВАРЯ =====
     async function loadVocabulary() {
         try {
@@ -1255,6 +1375,7 @@ async function markCard(isCorrect) {
     // ===== СТАРТ =====
     renderHangul();
 renderGrammar();
+renderPhrases();
     loadCards();
     loadVocabulary();
     loadStats();
