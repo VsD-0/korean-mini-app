@@ -7,14 +7,26 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --tg-theme-bg-color: #ffffff;
-            --tg-theme-text-color: #000000;
-            --tg-theme-hint-color: #888888;
-            --tg-theme-link-color: #2481cc;
-            --tg-theme-secondary-bg-color: #f0f0f0;
-            --tg-theme-button-color: #2481cc;
-            --tg-theme-button-text-color: #ffffff;
-        }
+    /* Светлая тема (по умолчанию) */
+    --tg-theme-bg-color: #ffffff;
+    --tg-theme-text-color: #000000;
+    --tg-theme-hint-color: #888888;
+    --tg-theme-link-color: #2481cc;
+    --tg-theme-secondary-bg-color: #f0f0f0;
+    --tg-theme-button-color: #2481cc;
+    --tg-theme-button-text-color: #ffffff;
+}
+
+/* Тёмная тема */
+[data-theme="dark"] {
+    --tg-theme-bg-color: #17212b;
+    --tg-theme-text-color: #ffffff;
+    --tg-theme-hint-color: #708499;
+    --tg-theme-link-color: #5288c1;
+    --tg-theme-secondary-bg-color: #232e3c;
+    --tg-theme-button-color: #5288c1;
+    --tg-theme-button-text-color: #ffffff;
+}
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--tg-theme-bg-color, #ffffff);
@@ -26,6 +38,49 @@
         h2 { margin-top: 0; font-size: 20px; }
         h3 { font-size: 16px; color: var(--tg-theme-hint-color); margin: 16px 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px; }
 
+/* Улучшения для тёмной темы */
+[data-theme="dark"] .hangul-card {
+    background: var(--tg-theme-secondary-bg-color);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .rule-card {
+    background: var(--tg-theme-secondary-bg-color);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .rule-card .example {
+    background: var(--tg-theme-bg-color);
+}
+
+[data-theme="dark"] table th {
+    border-bottom-color: var(--tg-theme-hint-color);
+}
+
+[data-theme="dark"] table td {
+    border-bottom-color: var(--tg-theme-secondary-bg-color);
+}
+
+[data-theme="dark"] .stat-card {
+    background: var(--tg-theme-secondary-bg-color);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .chart-container {
+    background: var(--tg-theme-secondary-bg-color);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] input[type="text"] {
+    background: var(--tg-theme-secondary-bg-color);
+    color: var(--tg-theme-text-color);
+    border-color: var(--tg-theme-hint-color);
+}
+
+[data-theme="dark"] input[type="text"]::placeholder {
+    color: var(--tg-theme-hint-color);
+}
+
         /* Табы */
         .tabs {
             display: flex;
@@ -36,11 +91,9 @@
             background: var(--tg-theme-bg-color);
             padding: 8px 0;
             z-index: 10;
-            overflow-x: auto;
         }
         .tab {
             flex: 1;
-            min-width: 80px;
             padding: 10px;
             border: none;
             border-radius: 10px;
@@ -50,7 +103,6 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
-            white-space: nowrap;
         }
         .tab.active {
             background: var(--tg-theme-button-color);
@@ -91,85 +143,76 @@
             background: var(--tg-theme-button-color);
             color: var(--tg-theme-button-text-color);
         }
+        .roman {
+            font-size: 12px;
+            color: var(--tg-theme-hint-color);
+            font-weight: 400;
+            letter-spacing: 0.3px;
+        }
         .hangul-card .symbol { font-size: 28px; font-weight: bold; display: block; margin-bottom: 4px; }
         .hangul-card .name { font-size: 11px; color: var(--tg-theme-hint-color); display: block; }
         .hangul-card .sound { font-size: 12px; font-weight: 600; color: var(--tg-theme-link-color); display: block; margin-top: 2px; }
         .hangul-card:active .name, .hangul-card:active .sound { color: inherit; opacity: 0.8; }
 
-        /* Правила чтения и грамматика */
-        .rule-card, .grammar-card {
+        /* Правила чтения */
+        .rule-card {
             background: var(--tg-theme-secondary-bg-color);
             border-radius: 12px;
             padding: 16px;
             margin-bottom: 12px;
         }
-        .rule-card h4, .grammar-card h4 {
+        .rule-card h4 {
             margin: 0 0 8px 0;
             font-size: 16px;
             color: var(--tg-theme-link-color);
         }
-        .rule-card p, .grammar-card p {
+        .rule-card p {
             margin: 0 0 8px 0;
             font-size: 14px;
             line-height: 1.5;
         }
-        .rule-card .example, .grammar-card .example {
+        .rule-card .example {
             background: var(--tg-theme-bg-color);
             padding: 8px 12px;
             border-radius: 8px;
             font-size: 13px;
             margin-top: 8px;
         }
-        .rule-card .example .kr, .grammar-card .example .kr {
+        .rule-card .example .kr {
             font-weight: bold;
             color: var(--tg-theme-link-color);
             font-size: 15px;
         }
-        .grammar-card .example-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 6px;
-        }
-        .grammar-card .example-row:last-child {
-            margin-bottom: 0;
-        }
+        /* Кнопка озвучки */
         .speak-btn {
-            background: var(--tg-theme-button-color);
-            color: var(--tg-theme-button-text-color);
-            border: none;
-            border-radius: 50%;
-            width: 28px;
-            height: 28px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0;
-            flex-shrink: 0;
+          background: var(--tg-theme-button-color, #2481cc);
+          color: var(--tg-theme-button-text-color, #ffffff);
+          border: none;
+          border-radius: 50%;
+          width: 36px;
+          height: 36px;
+          font-size: 18px;
+          cursor: pointer;
+          transition: all 0.2s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
+        
+        .speak-btn:hover {
+          transform: scale(1.1);
+          box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
         .speak-btn:active {
-            transform: scale(0.9);
+          transform: scale(0.95);
         }
+        
         .speak-btn:disabled {
-            opacity: 0.5;
-        }
-        .grammar-card .note {
-            font-size: 12px;
-            color: var(--tg-theme-hint-color);
-            margin-top: 8px;
-            font-style: italic;
-        }
-        .grammar-card .pattern {
-            background: var(--tg-theme-bg-color);
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: 13px;
-            margin: 6px 0;
-            display: inline-block;
+          opacity: 0.5;
+          cursor: not-allowed;
         }
 
         /* Статистика */
@@ -199,6 +242,8 @@
         .stat-card.streak .value {
             color: #ff6b35;
         }
+        
+        /* График */
         .chart-container {
             background: var(--tg-theme-secondary-bg-color);
             border-radius: 12px;
@@ -243,123 +288,138 @@
             font-weight: 600;
             color: var(--tg-theme-text-color);
         }
+/* Карточки */
+.cards-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0;
+}
 
-        /* Карточки */
-        .cards-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px 0;
-        }
-        .flashcard-wrapper {
-            perspective: 1000px;
-            width: 100%;
-            max-width: 320px;
-            height: 280px;
-            margin-bottom: 24px;
-        }
-        .flashcard {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            transition: transform 0.6s;
-            transform-style: preserve-3d;
-            cursor: pointer;
-        }
-        .flashcard.flipped {
-            transform: rotateY(180deg);
-        }
-        .flashcard-face {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: var(--tg-theme-secondary-bg-color);
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .flashcard-back {
-            transform: rotateY(180deg);
-        }
-        .flashcard-word {
-            font-size: 32px;
-            font-weight: bold;
-            color: var(--tg-theme-link-color);
-            text-align: center;
-            margin-bottom: 12px;
-        }
-        .flashcard-roman {
-            font-size: 16px;
-            color: var(--tg-theme-hint-color);
-            margin-bottom: 16px;
-        }
-        .flashcard-hint {
-            font-size: 14px;
-            color: var(--tg-theme-hint-color);
-            margin-top: 16px;
-        }
-        .flashcard-translation {
-            font-size: 24px;
-            color: var(--tg-theme-text-color);
-            text-align: center;
-        }
-        .card-controls {
-            display: flex;
-            gap: 16px;
-            width: 100%;
-            max-width: 320px;
-        }
-        .card-btn {
-            flex: 1;
-            padding: 16px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .card-btn:active {
-            transform: scale(0.95);
-        }
-        .card-btn.wrong {
-            background: #e74c3c;
-            color: white;
-        }
-        .card-btn.correct {
-            background: #27ae60;
-            color: white;
-        }
-        .cards-empty {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--tg-theme-hint-color);
-        }
-        .cards-empty .emoji {
-            font-size: 48px;
-            margin-bottom: 16px;
-        }
-        .cards-progress {
-            text-align: center;
-            margin-bottom: 16px;
-            font-size: 14px;
-            color: var(--tg-theme-hint-color);
-        }
-    </style>
-</head>
-<body>
+.flashcard-wrapper {
+    perspective: 1000px;
+    width: 100%;
+    max-width: 320px;
+    height: 280px;
+    margin-bottom: 24px;
+}
+
+.flashcard {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    cursor: pointer;
+}
+
+.flashcard.flipped {
+    transform: rotateY(180deg);
+}
+
+.flashcard-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.flashcard-back {
+    transform: rotateY(180deg);
+}
+
+.flashcard-word {
+    font-size: 32px;
+    font-weight: bold;
+    color: var(--tg-theme-link-color);
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.flashcard-roman {
+    font-size: 16px;
+    color: var(--tg-theme-hint-color);
+    margin-bottom: 16px;
+}
+
+.flashcard-hint {
+    font-size: 14px;
+    color: var(--tg-theme-hint-color);
+    margin-top: 16px;
+}
+
+.flashcard-translation {
+    font-size: 24px;
+    color: var(--tg-theme-text-color);
+    text-align: center;
+}
+
+.card-controls {
+    display: flex;
+    gap: 16px;
+    width: 100%;
+    max-width: 320px;
+}
+
+.card-btn {
+    flex: 1;
+    padding: 16px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.card-btn:active {
+    transform: scale(0.95);
+}
+
+.card-btn.wrong {
+    background: #e74c3c;
+    color: white;
+}
+
+.card-btn.correct {
+    background: #27ae60;
+    color: white;
+}
+
+.cards-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--tg-theme-hint-color);
+}
+
+.cards-empty .emoji {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.cards-progress {
+    text-align: center;
+    margin-bottom: 16px;
+    font-size: 14px;
+    color: var(--tg-theme-hint-color);
+}
+            </style>
+        </head>
+        <body>
     <!-- Табы переключения -->
     <div class="tabs">
         <button class="tab active" data-section="vocab">📚 Мои слова</button>
         <button class="tab" data-section="hangul">🔤 Хангыль</button>
+<button class="tab" data-section="cards">🎴 Карточки</button>
         <button class="tab" data-section="rules">📖 Правила</button>
-        <button class="tab" data-section="grammar">📝 Грамматика</button>
-        <button class="tab" data-section="cards">🎴 Карточки</button>
         <button class="tab" data-section="stats">📊 Статистика</button>
     </div>
 
@@ -398,6 +458,15 @@
             <div class="hangul-grid" id="compound-vowels"></div>
         </div>
     </div>
+
+<!-- Секция: Карточки -->
+<div id="cards" class="section">
+    <h2>Режим карточек</h2>
+    <p style="color: var(--tg-theme-hint-color); font-size: 14px; margin-top: -8px;">
+        Нажмите на карточку, чтобы увидеть перевод
+    </p>
+    <div id="cards-content" class="loading">Загрузка...</div>
+</div>
 
     <!-- Секция: Правила чтения -->
     <div id="rules" class="section">
@@ -464,24 +533,6 @@
         </div>
     </div>
 
-    <!-- Секция: Грамматика -->
-    <div id="grammar" class="section">
-        <h2>Грамматика</h2>
-        <p style="color: var(--tg-theme-hint-color); font-size: 14px; margin-top: -8px;">
-            Основные грамматические конструкции
-        </p>
-        <div id="grammar-content"></div>
-    </div>
-
-    <!-- Секция: Карточки -->
-    <div id="cards" class="section">
-        <h2>Режим карточек</h2>
-        <p style="color: var(--tg-theme-hint-color); font-size: 14px; margin-top: -8px;">
-            Нажмите на карточку, чтобы увидеть перевод
-        </p>
-        <div id="cards-content" class="loading">Загрузка...</div>
-    </div>
-
     <!-- Секция: Статистика -->
     <div id="stats" class="section">
         <h2>Статистика обучения</h2>
@@ -489,398 +540,444 @@
     </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
 
-        const userId = tg.initDataUnsafe?.user?.id || 9235360161;
-        const API_URL = "https://sunday-bot-yg41.onrender.com";
+// ===== ОПРЕДЕЛЕНИЕ ТЕМЫ =====
+function applyTheme() {
+    const theme = tg.colorScheme || 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+    
+    // Если Telegram отдал кастомные цвета темы — используем их
+    if (tg.themeParams) {
+        const params = tg.themeParams;
+        if (params.bg_color) document.documentElement.style.setProperty('--tg-theme-bg-color', params.bg_color);
+        if (params.text_color) document.documentElement.style.setProperty('--tg-theme-text-color', params.text_color);
+        if (params.hint_color) document.documentElement.style.setProperty('--tg-theme-hint-color', params.hint_color);
+        if (params.link_color) document.documentElement.style.setProperty('--tg-theme-link-color', params.link_color);
+        if (params.secondary_bg_color) document.documentElement.style.setProperty('--tg-theme-secondary-bg-color', params.secondary_bg_color);
+        if (params.button_color) document.documentElement.style.setProperty('--tg-theme-button-color', params.button_color);
+        if (params.button_text_color) document.documentElement.style.setProperty('--tg-theme-button-text-color', params.button_text_color);
+    }
+}
 
-        // ===== ДАННЫЕ ХАНГЫЛЯ =====
-        const consonants = [
-            { symbol: 'ㄱ', name: 'киёк', sound: 'г/к', tts: '가' },
-            { symbol: 'ㄴ', name: 'ниын', sound: 'н',   tts: '나' },
-            { symbol: 'ㄷ', name: 'тигыт', sound: 'д/т', tts: '다' },
-            { symbol: 'ㄹ', name: 'риыль', sound: 'р/л', tts: '라' },
-            { symbol: 'ㅁ', name: 'миым',  sound: 'м',   tts: '마' },
-            { symbol: 'ㅂ', name: 'пиып',  sound: 'б/п', tts: '바' },
-            { symbol: 'ㅅ', name: 'сиот',  sound: 'с',   tts: '사' },
-            { symbol: 'ㅇ', name: 'иын',   sound: 'нг/—',tts: '앙' },
-            { symbol: 'ㅈ', name: 'чиыт',  sound: 'ч/дж',tts: '자' },
-            { symbol: 'ㅊ', name: 'чхиыт', sound: 'чх',  tts: '차' },
-            { symbol: 'ㅋ', name: 'кхиык', sound: 'кх',  tts: '카' },
-            { symbol: 'ㅌ', name: 'тхиыт', sound: 'тх',  tts: '타' },
-            { symbol: 'ㅍ', name: 'пхиып', sound: 'пх',  tts: '파' },
-            { symbol: 'ㅎ', name: 'хиыт',  sound: 'х',   tts: '하' }
+applyTheme();
+
+// Слушаем изменения темы (если пользователь переключит тему в Telegram)
+tg.onEvent('themeChanged', applyTheme);
+
+    const userId = tg.initDataUnsafe?.user?.id || 9235360161;
+    const API_URL = "https://sunday-bot-yg41.onrender.com";
+
+    // ===== ДАННЫЕ ХАНГЫЛЯ =====
+    const consonants = [
+        { symbol: 'ㄱ', name: 'киёк', sound: 'г/к', tts: '가' },
+        { symbol: 'ㄴ', name: 'ниын', sound: 'н',   tts: '나' },
+        { symbol: 'ㄷ', name: 'тигыт', sound: 'д/т', tts: '다' },
+        { symbol: 'ㄹ', name: 'риыль', sound: 'р/л', tts: '라' },
+        { symbol: 'ㅁ', name: '미ым',  sound: 'м',   tts: '마' },
+        { symbol: 'ㅂ', name: 'пиып',  sound: 'б/п', tts: '바' },
+        { symbol: 'ㅅ', name: 'сиот',  sound: 'с',   tts: '사' },
+        { symbol: 'ㅇ', name: 'иын',   sound: 'нг/—',tts: '앙' },
+        { symbol: 'ㅈ', name: 'чиыт',  sound: 'ч/дж',tts: '자' },
+        { symbol: 'ㅊ', name: 'чхиыт', sound: 'чх',  tts: '차' },
+        { symbol: 'ㅋ', name: 'кхиык', sound: 'кх',  tts: '카' },
+        { symbol: 'ㅌ', name: 'тхиыт', sound: 'тх',  tts: '타' },
+        { symbol: 'ㅍ', name: 'пхиып', sound: 'пх',  tts: '파' },
+        { symbol: 'ㅎ', name: 'хиыт',  sound: 'х',   tts: '하' }
+    ];
+    const doubleConsonants = [
+        { symbol: 'ㄲ', name: 'сангиёк',   sound: 'кк', tts: '까' },
+        { symbol: 'ㄸ', name: 'ссандигыт', sound: 'тт', tts: '따' },
+        { symbol: 'ㅃ', name: 'ссанпиып',  sound: 'пп', tts: '빠' },
+        { symbol: 'ㅆ', name: 'ссансиот',  sound: 'сс', tts: '싸' },
+        { symbol: 'ㅉ', name: 'ссанчиыт',  sound: 'чч', tts: '짜' }
+    ];
+    const vowels = [
+        { symbol: 'ㅏ', name: 'а', sound: 'а' },
+        { symbol: 'ㅑ', name: 'я', sound: 'я' },
+        { symbol: 'ㅓ', name: 'о', sound: 'о' },
+        { symbol: 'ㅕ', name: 'ё', sound: 'ё' },
+        { symbol: 'ㅗ', name: 'о', sound: 'о' },
+        { symbol: 'ㅛ', name: 'ё', sound: 'ё' },
+        { symbol: 'ㅜ', name: 'у', sound: 'у' },
+        { symbol: 'ㅠ', name: 'ю', sound: 'ю' },
+        { symbol: 'ㅡ', name: 'ы', sound: 'ы' },
+        { symbol: 'ㅣ', name: 'и', sound: 'и' }
+    ];
+    const compoundVowels = [
+        { symbol: 'ㅐ', name: 'э', sound: 'э' },
+        { symbol: 'ㅒ', name: 'йе', sound: 'йе' },
+        { symbol: 'ㅔ', name: 'е', sound: 'е' },
+        { symbol: 'ㅖ', name: 'йе', sound: 'йе' },
+        { symbol: 'ㅘ', name: 'ва', sound: 'ва' },
+        { symbol: 'ㅙ', name: 'вэ', sound: 'вэ' },
+        { symbol: 'ㅚ', name: 'ве', sound: 'ве' },
+        { symbol: 'ㅝ', name: 'во', sound: 'во' },
+        { symbol: 'ㅞ', name: 'ве', sound: 'ве' },
+        { symbol: 'ㅟ', name: 'ви', sound: 'ви' },
+        { symbol: 'ㅢ', name: 'ыи', sound: 'ыи' }
+    ];
+
+    // ===== ОДИН АУДИО-КЭШ =====
+    const audioCache = {};
+
+    async function getAudioBlob(text) {
+        if (audioCache[text]) return audioCache[text];
+        const url = `${API_URL}/api/tts?text=${encodeURIComponent(text)}`;
+        const res = await fetch(url, {
+            headers: { 'ngrok-skip-browser-warning': 'true' }
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const blob = await res.blob();
+        audioCache[text] = URL.createObjectURL(blob);
+        return audioCache[text];
+    }
+
+    function playFromCache(text) {
+        const url = audioCache[text];
+        if (!url) return false;
+        const audio = new Audio(url);
+        audio.play().catch(e => console.error('play blocked:', e));
+        return true;
+    }
+
+    // Предзагрузка звуков хангыля
+    async function preloadHangulAudio() {
+        const all = [...consonants, ...doubleConsonants, ...vowels, ...compoundVowels];
+        for (const item of all) {
+            const text = item.tts || item.symbol;
+            try { await getAudioBlob(text); } catch (e) { /* skip */ }
+        }
+        console.log('Аудио хангыля предзагружено:', Object.keys(audioCache).length);
+    }
+
+    // ===== ИЗВЛЕЧЕНИЕ ХАНГЫЛЯ =====
+    function extractKorean(text) {
+        const m = (text || '').match(/[가-힣]+/);
+        return m ? m[0] : '';
+    }
+
+    // ===== РОМАНИЗАЦИЯ (Revised Romanization) =====
+    const INITIALS = ['g','kk','n','d','tt','r','m','b','pp','s','ss','','j','jj','ch','k','t','p','h'];
+    const MEDIALS  = ['a','ae','ya','yae','eo','e','yeo','ye','o','wa','wae','oe','yo','u','wo','we','wi','yu','eu','ui','i'];
+    const FINALS   = ['','k','kk','k','n','n','n','t','l','k','m','l','l','l','p','l','m','p','s','t','t','ng','t','t','t','t','p','t'];
+    
+    function romanize(word) {
+        let out = '';
+        for (const ch of word) {
+            const code = ch.codePointAt(0);
+            if (code < 0xAC00 || code > 0xD7A3) { out += ch; continue; } // не слог — оставляем как есть
+            const idx = code - 0xAC00;
+            const ini = Math.floor(idx / 588);
+            const med = Math.floor((idx % 588) / 28);
+            const fin = idx % 28;
+            out += INITIALS[ini] + MEDIALS[med] + FINALS[fin];
+        }
+        return out;
+    }
+
+    // ===== РЕНДЕР ХАНГЫЛЯ =====
+    function renderHangul() {
+        const groups = [
+            ['consonants', consonants],
+            ['double-consonants', doubleConsonants],
+            ['vowels', vowels],
+            ['compound-vowels', compoundVowels]
         ];
-        
-        const doubleConsonants = [
-            { symbol: 'ㄲ', name: 'сангиёк',   sound: 'кк', tts: '까' },
-            { symbol: 'ㄸ', name: 'ссандигыт', sound: 'тт', tts: '따' },
-            { symbol: 'ㅃ', name: 'ссанпиып',  sound: 'пп', tts: '빠' },
-            { symbol: 'ㅆ', name: 'ссансиот',  sound: 'сс', tts: '싸' },
-            { symbol: 'ㅉ', name: 'ссанчиыт',  sound: 'чч', tts: '짜' }
-        ];
 
-        const vowels = [
-            { symbol: 'ㅏ', name: 'а', sound: 'а' },
-            { symbol: 'ㅑ', name: 'я', sound: 'я' },
-            { symbol: 'ㅓ', name: 'о', sound: 'о' },
-            { symbol: 'ㅕ', name: 'ё', sound: 'ё' },
-            { symbol: 'ㅗ', name: 'о', sound: 'о' },
-            { symbol: 'ㅛ', name: 'ё', sound: 'ё' },
-            { symbol: 'ㅜ', name: 'у', sound: 'у' },
-            { symbol: 'ㅠ', name: 'ю', sound: 'ю' },
-            { symbol: 'ㅡ', name: 'ы', sound: 'ы' },
-            { symbol: 'ㅣ', name: 'и', sound: 'и' }
-        ];
+        let hint = document.getElementById('hangul-hint');
+        if (!hint) {
+            hint = document.createElement('div');
+            hint.id = 'hangul-hint';
+            hint.style.cssText = 'position:sticky; bottom:0; background:var(--tg-theme-secondary-bg-color); padding:10px; border-radius:10px; margin-top:12px; font-size:14px; text-align:center; min-height:20px;';
+            document.getElementById('hangul').appendChild(hint);
+        }
 
-        const compoundVowels = [
-            { symbol: 'ㅐ', name: 'э', sound: 'э' },
-            { symbol: 'ㅒ', name: 'йе', sound: 'йе' },
-            { symbol: 'ㅔ', name: 'е', sound: 'е' },
-            { symbol: 'ㅖ', name: 'йе', sound: 'йе' },
-            { symbol: 'ㅘ', name: 'ва', sound: 'ва' },
-            { symbol: 'ㅙ', name: 'вэ', sound: 'вэ' },
-            { symbol: 'ㅚ', name: 'ве', sound: 'ве' },
-            { symbol: 'ㅝ', name: 'во', sound: 'во' },
-            { symbol: 'ㅞ', name: 'ве', sound: 'ве' },
-            { symbol: 'ㅟ', name: 'ви', sound: 'ви' },
-            { symbol: 'ㅢ', name: 'ыи', sound: 'ыи' }
-        ];
+        groups.forEach(([containerId, items]) => {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'hangul-card';
+                card.innerHTML = `
+                    <span class="symbol">${item.symbol}</span>
+                    <span class="name">${item.name}</span>
+                    <span class="sound">[${item.sound}]</span>
+                `;
+                card.onclick = () => {
+                    const ttsText = item.tts || item.symbol;
+                    hint.innerHTML = `<b style="font-size:20px">${item.symbol}</b> — ${item.name} ` +
+                        `<span style="color:var(--tg-theme-link-color)">[${item.sound}]</span> ` +
+                        `<span style="opacity:.7">🔊 ${ttsText} (${romanize(ttsText)})</span>`;
+                    if (!playFromCache(ttsText)) {
+                        getAudioBlob(ttsText).then(() => playFromCache(ttsText));
+                    }
+                };
+                container.appendChild(card);
+            });
+        });
+    }
 
-        // ===== ДАННЫЕ ГРАММАТИКИ =====
-        const grammarTopics = [
-            {
-                title: "1. Частицы темы и подлежащего (은/는, 이/가)",
-                content: "В корейском языке есть две частицы, которые указывают на тему или подлежащее предложения. Выбор зависит от того, заканчивается ли слово на согласный или гласный.",
-pattern: "Согласный + 은/는 | Гласный + 이/가",
-                    { kr: "버스로", ru: "на автобусе" },
-            },
-            {
+    // ===== ЗАГРУЗКА СЛОВАРЯ =====
+    async function loadVocabulary() {
+        try {
+            const response = await fetch(`${API_URL}/api/vocabulary?user_id=${userId}`, {
                 headers: { 'ngrok-skip-browser-warning': 'true' }
-                ],
-                    { kr: "먹다 → 먹어요", ru: "есть" },
-            },
-                    { kr: "볼 거예요", ru: "буду смотреть" }
-                    { kr: "갔다", ru: "пошёл" },
-            const res = await fetch(url, {
-                note: "Аналог прошедшего времени в русском"
-                    { kr: "못 가요", ru: "не могу идти" }
-        const audioCache = {};
-                note: "은/는 — для темы (о чём говорим), 이/가 — для подлежащего (кто делает действие)"
-                    { kr: "할 거예요", ru: "буду делать" },
-                note: "에 — для мест, 에게/한테 — для людей"
-        function playFromCache(text) {
-                    { kr: "안 먹어요", ru: "не ем" },
-                ],
-                content: "Выражает намерение или предположение о будущем действии.",
-            {
-                    { kr: "친구에게", ru: "другу" },
-                    { kr: "내가", ru: "я (подлежащее)" },
-            return item.tts || item.symbol;
-                title: "6. Частица направления (에/에게)",
-                    { kr: "먹을 거예요", ru: "буду есть" },
-                examples: [
-                    { kr: "가다 → 가요", ru: "идти" },
-                    { kr: "한국어로", ru: "по-корейски" },
-        async function getAudioBlob(text) {
-                content: "Образуется добавлением окончаний прошедшего времени к основе глагола.",
-                    { kr: "갈 거예요", ru: "пойду" },
-        // ===== КЭШ АУДИО =====
-                note: "Аналог творительного падежа"
-                ],
-                pattern: "Согласный + 을 | Гласный + 를",
-                pattern: "С пакчимом + 으로 | Без пакчима + 로",
-            },
-                ],
-                examples: [
-                title: "8. Отрицание (안/못)",
-            const url = `${API_URL}/api/tts?text=${encodeURIComponent(text)}`;
-                examples: [
-                    { kr: "칼로", ru: "ножом" },
-            {
-                title: "3. Спряжение глаголов (아/어요)",
-            },
-            return audioCache[text];
-                ],
-                    { kr: "보다 → 봐요", ru: "смотреть" }
-                note: "Также может выражать предположение: 'наверное, сделает'"
-
-            const blob = await res.blob();
-        ];
-                examples: [
             });
-                    { kr: "하다 → 해요", ru: "делать" },
-                    { kr: "먹었어요", ru: "поел" },
-                ],
-        
-            },
-            const url = audioCache[text];
-                    { kr: "못 먹어요", ru: "не могу есть" },
-                note: "Самая распространённая форма вежливой речи"
-                pattern: "Без пакчима + ㄹ 거예요 | С пакчимом + 을 거예요",
-                    { kr: "선생님께", ru: "учителю (вежливо)" }
-                    { kr: "사과가", ru: "яблоко (подлежащее)" }
-        }
-                content: "Указывает на направление действия или адресата.",
-                    { kr: "왼쪽으로", ru: "налево" }
-            if (audioCache[text]) return audioCache[text];
-                pattern: "Гласные ㅏ, ㅗ + 았어요 | Остальные + 었어요 | 하다 → 했어요",
-                note: "Аналог винительного падежа в русском"
-                examples: [
-                examples: [
-            {
-                content: "В корейском языке есть две частицы, которые указывают на тему или подлежащее предложения. Выбор зависит от того, заканчивается ли слово на согласный или гласный.",
-                content: "Два способа отрицания: 안 — не делать (по желанию), 못 — не мочь (по обстоятельствам).",
-                    { kr: "학교에", ru: "в школу" },
-                title: "4. Прошедшее время (았/었어요)",
-                content: "Вежливая форма настоящего времени. Окончание зависит от последней гласной основы глагола.",
-            {
-        }
-            audioCache[text] = URL.createObjectURL(blob);
-                    { kr: "저는", ru: "я (тема)" },
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                    { kr: "했어요", ru: "сделал" },
-                note: "안 — субъективное отрицание, 못 — объективное"
-        function getTtsText(item) {
-            {
-            if (!url) return false;
-                    { kr: "안 가요", ru: "не иду" },
-                ],
-        
-                pattern: "Место + 에 | Человек + 에게/한테",
-                examples: [
-            },
-                    { kr: "밥을", ru: "рис (ем)" },
-                title: "2. Частица дополнения (을/를)",
-                pattern: "안 + глагол | глагол + 지 않다",
-                    { kr: "집에", ru: "домой" },
-                pattern: "Гласные ㅏ, ㅗ + 아요 | Остальные + 어요 | 하다 → 해요",
-                title: "5. Будущее время (ㄹ/을 거예요)",
-                    { kr: "학생은", ru: "студент (тема)" },
-                    { kr: "봤어요", ru: "посмотрел" }
-                title: "7. Частица инструмента (으로/로)",
-            const audio = new Audio(url);
-            {
-                    { kr: "물을", ru: "воду (пью)" },
-                content: "Указывает на прямое дополнение — объект, на который направлено действие.",
-                examples: [
-                ],
-                content: "Указывает на инструмент, способ или направление.",
-            audio.play().catch(e => console.error('play blocked:', e));
-                    { kr: "사과를", ru: "яблоко (ем)" },
-            return true;
-                    { kr: "책을", ru: "книгу (читаю)" }
-        }
+            if (!response.ok) throw new Error("Ошибка сети");
+            const words = await response.json();
 
-        async function preloadHangulAudio() {
-            const all = [...consonants, ...doubleConsonants, ...vowels, ...compoundVowels];
-            for (const item of all) {
-                const text = getTtsText(item);
-                try { await getAudioBlob(text); } catch (e) { /* skip */ }
+            const container = document.getElementById('vocab-content');
+            if (words.length === 0) {
+                container.innerHTML = '<p class="empty">Словарь пуст. Добавьте слова в чате с ботом!</p>';
+                return;
             }
-            console.log('Аудио хангыля предзагружено:', Object.keys(audioCache).length);
-        }
 
-        // ===== РЕНДЕР ХАНГЫЛЯ =====
-        function renderHangul() {
-            const groups = [
-                ['consonants', consonants],
-                ['double-consonants', doubleConsonants],
-                ['vowels', vowels],
-                ['compound-vowels', compoundVowels]
-            ];
-
-            let hint = document.getElementById('hangul-hint');
-            if (!hint) {
-                hint = document.createElement('div');
-                hint.id = 'hangul-hint';
-                hint.style.cssText = 'position:sticky; bottom:0; background:var(--tg-theme-secondary-bg-color); padding:10px; border-radius:10px; margin-top:12px; font-size:14px; text-align:center; min-height:20px;';
-                document.getElementById('hangul').appendChild(hint);
-            }
-groups.forEach(([containerId, items]) => {
-                    `;
-            const url = audioCache[text];
-                        console.error('TTS error:', err);
-        }
-                hint.id = 'hangul-hint';
-                            playFromCache(text);
-                    try {
-
-        }
-                        <span class="name">${item.name}</span>
+            let html = `<table>
+                <tr><th>Слово</th><th>Перевод</th><th>Повтор</th><th></th></tr>`;
+            words.forEach(w => {
+                const korean = extractKorean(w.word) || extractKorean(w.translation);
+                const roman = romanize(korean || w.word);
+                const dateStr = w.next_review
+                    ? w.next_review.split(/[T ]/)[0].split('-').reverse().join('.')
+                    : '—';
+                html += `<tr>
+                    <td class="kr-word">${w.word}<br><span class="roman">${roman}</span></td>
+                    <td>${w.translation}</td>
+                    <td class="date">${dateStr}</td>
+                    <td>${korean ? `<button class="speak-btn" data-word="${korean}" title="Прослушать">🔊</button>` : ''}</td>
+                </tr>`;
             });
-                    container.appendChild(card);
-
-                const container = document.getElementById(containerId);
-                    card.onclick = () => {
-            if (!url) return false;
-
-                hint.style.cssText = 'position:sticky; bottom:0; background:var(--tg-theme-secondary-bg-color); padding:10px; border-radius:10px; margin-top:12px; font-size:14px; text-align:center; min-height:20px;';
-                        }
-            let hint = document.getElementById('hangul-hint');
-
-
-            grammarTopics.forEach(topic => {
-                container.innerHTML = '';
-            const audio = new Audio(url);
-        // ===== РЕНДЕР ГРАММАТИКИ =====
-                document.getElementById('hangul').appendChild(hint);
-        function romanize(word) {
-            // Навешиваем обработчики на кнопки озвучки
-            audio.play().catch(e => console.error('play blocked:', e));
-        function renderGrammar() {
-            }
-            const INITIALS = ['g','kk','n','d','tt','r','m','b','pp','s','ss','','j','jj','ch','k','t','p','h'];
-            return true;
-            const MEDIALS  = ['a','ae','ya','yae','eo','e','yeo','ye','o','wa','wae','oe','yo','u','wo','we','wi','yu','eu','ui','i'];
+            html += `</table>`;
+            container.innerHTML = html;
+        } catch (error) {
+            console.error(error);
+            document.getElementById('vocab-content').innerHTML =
+                `<p class="error">Ошибка загрузки.<br><small>${error.message}</small></p>`;
         }
-            const FINALS   = ['','k','kk','k','n','n','n','t','l','k','m','l','l','l','p','l','m','p','s','t','t','ng','t','t','t','t','p','t'];
+    }
+
+    // ===== ЕДИНЫЙ ОБРАБОТЧИК ОЗВУЧКИ (делегирование) =====
+    document.getElementById('vocab-content').addEventListener('click', async (e) => {
+        const btn = e.target.closest('.speak-btn');
+        if (!btn) return;
+        const word = btn.dataset.word;
+        if (!word) return;
+        btn.style.opacity = '0.5';
+        try {
+            if (!playFromCache(word)) {
+                await getAudioBlob(word);
+                playFromCache(word);
+            }
+        } catch (err) {
+            console.error('TTS error:', err);
+            btn.textContent = '⚠️';
+            setTimeout(() => btn.textContent = '🔊', 2000);
+        } finally {
+            btn.style.opacity = '1';
+        }
+    });
+
+    // ===== ПЕРЕКЛЮЧЕНИЕ ТАБОВ =====
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById(tab.dataset.section).classList.add('active');
+        });
+    });
+
+    // ===== СВАЙПЫ =====
+    let touchStartX = 0;
+    document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
+    document.addEventListener('touchend', e => {
+        const diff = touchStartX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 50) {
+            const tabs = document.querySelectorAll('.tab');
+            const current = document.querySelector('.tab.active');
+            const idx = Array.from(tabs).indexOf(current);
+            const next = diff > 0 ? idx + 1 : idx - 1;
+            if (next >= 0 && next < tabs.length) tabs[next].click();
+        }
+    });
+
+    // ===== ПОИСК =====
+    document.getElementById('search').addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        document.querySelectorAll('#vocab-content tr').forEach(row => {
+            row.style.display = row.textContent.toLowerCase().includes(query) ? '' : 'none';
+        });
+    });
+
+    // ===== ЗАГРУЗКА СТАТИСТИКИ =====
+    async function loadStats() {
+        try {
+            const response = await fetch(`${API_URL}/api/stats?user_id=${userId}`, {
+                headers: { 'ngrok-skip-browser-warning': 'true' }
             });
-
-            
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        async function preloadHangulAudio() {
-            let out = '';
-            const blob = await res.blob();
-            const all = [...consonants, ...doubleConsonants, ...vowels, ...compoundVowels];
-            for (const ch of word) {
-            audioCache[text] = URL.createObjectURL(blob);
-            for (const item of all) {
-                const code = ch.codePointAt(0);
-            return audioCache[text];
-                const text = getTtsText(item);
-                if (code < 0xAC00 || code > 0xD7A3) { out += ch; continue; }
-        }
-                try { await getAudioBlob(text); } catch (e) { /* skip */ }
-                const idx = code - 0xAC00;
-
-                const ini = Math.floor(idx / 588);
-                const med = Math.floor((idx % 588) / 28);
-                const fin = idx % 28;
-                out += INITIALS[ini] + MEDIALS[med] + FINALS[fin];
-            }
-            return out;
-        }
-                    <div class="flashcard-wrapper">
-                        <div class="flashcard" id="flashcard">
-                </div>
-                <div class="cards-progress">
-            
-                            <div class="flashcard-face flashcard-front">
-                <div class="cards-container">
-                    Карточка ${currentCardIndex + 1} из ${currentCards.length}
+            if (!response.ok) throw new Error("Ошибка сети");
+            const stats = await response.json();
+    
+            const container = document.getElementById('stats-content');
             container.innerHTML = `
-            const korean = extractKorean(card.word) || extractKorean(card.translation);
-                                <div class="flashcard-word">${card.word}</div>
-            const roman = romanize(korean || card.word);
-                                <div class="flashcard-roman">${roman}</div>
-// ===== ЗАГРУЗКА СЛОВАРЯ =====
-                html += `</table>`;
-                });
-                                <div class="flashcard-hint">Нажмите, чтобы увидеть перевод</div>
-                            </div>
-                            <div class="flashcard-face flashcard-back">
-                                <div class="flashcard-translation">${card.translation}</div>
-                                <div class="flashcard-hint">Знаете это слово?</div>
-                            </div>
-                        </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="value">${stats.total}</span>
+                        <span class="label">Всего слов</span>
                     </div>
-                    <div class="card-controls">
-                        <button class="card-btn wrong" onclick="markCard(false)">❌ Не знаю</button>
-                        <button class="card-btn correct" onclick="markCard(true)">✅ Знаю</button>
+                    <div class="stat-card">
+                        <span class="value">${stats.due_today}</span>
+                        <span class="label">Повторить сегодня</span>
                     </div>
+                    <div class="stat-card streak">
+                        <span class="value">${stats.streak} 🔥</span>
+                        <span class="label">Дней подряд</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="value">${Math.round((stats.total / 100) * 100)}%</span>
+                        <span class="label">Прогресс (цель: 100)</span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3>Прогресс за неделю</h3>
+                    <div class="chart" id="weekly-chart"></div>
                 </div>
             `;
-            
-            document.getElementById('flashcard').onclick = () => {
-                document.getElementById('flashcard').classList.toggle('flipped');
-            };
+    
+            // Рисуем график
+            const chart = document.getElementById('weekly-chart');
+            const maxCount = Math.max(...stats.weekly.map(d => d.count), 1);
+            stats.weekly.forEach(day => {
+                const height = (day.count / maxCount) * 100;
+                const bar = document.createElement('div');
+                bar.className = 'chart-bar';
+                bar.style.height = `${Math.max(height, 4)}%`;
+                bar.innerHTML = `
+                    <span class="count">${day.count}</span>
+                    <span class="day">${day.day}</span>
+                `;
+                chart.appendChild(bar);
+            });
+        } catch (error) {
+            console.error(error);
+            document.getElementById('stats-content').innerHTML = 
+                `<p class="error">Ошибка загрузки статистики.<br><small>${error.message}</small></p>`;
         }
+    }
+
+// ===== РЕЖИМ КАРТОЧЕК =====
+let currentCards = [];
+let currentCardIndex = 0;
+
+async function loadCards() {
+    try {
+        const response = await fetch(`${API_URL}/api/due-words?user_id=${userId}`, {
+            headers: { 'ngrok-skip-browser-warning': 'true' }
+        });
+        if (!response.ok) throw new Error("Ошибка сети");
+        currentCards = await response.json();
+        
+        const container = document.getElementById('cards-content');
+        
+        if (currentCards.length === 0) {
+            container.innerHTML = `
+                <div class="cards-empty">
+                    <div class="emoji">🎉</div>
+                    <p>На сегодня всё!</p>
+                    <p style="font-size: 13px; margin-top: 8px;">Нет слов для повторения</p>
+                </div>
+            `;
+            return;
+        }
+        
+        currentCardIndex = 0;
+        renderCard();
+    } catch (error) {
+        console.error(error);
+        document.getElementById('cards-content').innerHTML = 
+            `<p class="error">Ошибка загрузки.<br><small>${error.message}</small></p>`;
+    }
+}
+
+function renderCard() {
+    const container = document.getElementById('cards-content');
+    const card = currentCards[currentCardIndex];
+    const korean = extractKorean(card.word) || extractKorean(card.translation);
+    const roman = romanize(korean || card.word);
+    
+    container.innerHTML = `
+        <div class="cards-progress">
+            Карточка ${currentCardIndex + 1} из ${currentCards.length}
+        </div>
+        <div class="cards-container">
+            <div class="flashcard-wrapper">
+                <div class="flashcard" id="flashcard">
+                    <div class="flashcard-face flashcard-front">
+                        <div class="flashcard-word">${card.word}</div>
+                        <div class="flashcard-roman">${roman}</div>
+                        <div class="flashcard-hint">Нажмите, чтобы увидеть перевод</div>
+                    </div>
+                    <div class="flashcard-face flashcard-back">
+                        <div class="flashcard-translation">${card.translation}</div>
+                        <div class="flashcard-hint">Знаете это слово?</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-controls">
+                <button class="card-btn wrong" onclick="markCard(false)">❌ Не знаю</button>
+                <button class="card-btn correct" onclick="markCard(true)">✅ Знаю</button>
+            </div>
+        </div>
+    `;
+    
+    // Переворот по клику
+    document.getElementById('flashcard').onclick = () => {
+        document.getElementById('flashcard').classList.toggle('flipped');
+    };
+}
+
 async function markCard(isCorrect) {
-                    headers: { 'Content-Type': 'application/json' },
-                            <p>Отлично! Все карточки пройдены</p>
-                const maxCount = Math.max(...stats.weekly.map(d => d.count), 1);
-            const card = currentCards[currentCardIndex];
-                    body: JSON.stringify({
-                stats.weekly.forEach(day => {
-                    const height = (day.count / maxCount) * 100;
-                    const bar = document.createElement('div');
-                    bar.className = 'chart-bar';
-                    bar.style.height = `${Math.max(height, 4)}%`;
-                    bar.innerHTML = `
-                        <span class="count">${day.count}</span>
-                        <span class="day">${day.day}</span>
-                    `;
-                    chart.appendChild(bar);
-                });
-            } catch (error) {
-                console.error(error);
-                document.getElementById('stats-content').innerHTML = 
-                    `<p class="error">Ошибка загрузки статистики.<br><small>${error.message}</small></p>`;
-            }
+    const card = currentCards[currentCardIndex];
+    
+    try {
+        await fetch(`${API_URL}/api/update-srs`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: userId,
+                word_id: card.id,
+                is_correct: isCorrect
+            })
+        });
+        
+        // Переход к следующей карточке
+        currentCardIndex++;
+        if (currentCardIndex < currentCards.length) {
+            renderCard();
+        } else {
+            // Все карточки пройдены
+            document.getElementById('cards-content').innerHTML = `
+                <div class="cards-empty">
+                    <div class="emoji">🎉</div>
+                    <p>Отлично! Все карточки пройдены</p>
+                    <p style="font-size: 13px; margin-top: 8px;">Возвращайтесь завтра для повторения</p>
+                </div>
+            `;
         }
-// ===== ПЕРЕКЛЮЧЕНИЕ ТАБОВ =====
-                console.error('Error updating SRS:', error);
-                    document.getElementById('cards-content').innerHTML = `
-                        <div class="stat-card">
-                    `;
-        }
-                        <span class="day">${day.day}</span>
-                    bar.style.height = `${Math.max(height, 4)}%`;
-                tab.classList.add('active');
-                            <span class="label">Повторить сегодня</span>
-                });
-                await fetch(`${API_URL}/api/update-srs`, {
-            
-                        <div class="cards-empty">
-                            <span class="value">${stats.total}</span>
-                }
-
-                document.getElementById(tab.dataset.section).classList.add('active');
-                        </div>
-            } catch (error) {
-                    method: 'POST',
-            document.getElementById('flashcard').onclick = () => {
-                            <div class="emoji">🎉</div>
-        async function markCard(isCorrect) {
-            });
-                    headers: { 'Content-Type': 'application/json' },
-                            <p>Отлично! Все карточки пройдены</p>
-            const card = currentCards[currentCardIndex];
-        });
-                    body: JSON.stringify({
-
-        // ===== СВАЙПЫ =====
-        let touchStartX = 0;
-        document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
-        document.addEventListener('touchend', e => {
-            const diff = touchStartX - e.changedTouches[0].clientX;
-            if (Math.abs(diff) > 50) {
-                const tabs = document.querySelectorAll('.tab');
-                const current = document.querySelector('.tab.active');
-                const idx = Array.from(tabs).indexOf(current);
-                const next = diff > 0 ? idx + 1 : idx - 1;
-                if (next >= 0 && next < tabs.length) tabs[next].click();
-            }
-        });
-
-        // ===== ПОИСК =====
-        document.getElementById('search').addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase();
-            document.querySelectorAll('#vocab-content tr').forEach(row => {
-                row.style.display = row.textContent.toLowerCase().includes(query) ? '' : 'none';
-            });
-        });
-
-        // ===== ИНИЦИАЛИЗАЦИЯ =====
-        renderHangul();
-        renderGrammar();
-        loadVocabulary();
-        loadCards();
-        loadStats();
-        preloadHangulAudio();
-    </script>
+    } catch (error) {
+        console.error('Error updating SRS:', error);
+    }
+}
+        
+    // ===== СТАРТ =====
+    renderHangul();
+    loadCards();
+    loadVocabulary();
+    loadStats();
+    preloadHangulAudio();
+</script>
 </body>
 </html>
