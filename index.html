@@ -1729,7 +1729,6 @@ function completeChallengeTask() {
         });
     });
 
-    // ===== СВАЙПЫ =====
  // ===== УЛУЧШЕННЫЕ СВАЙПЫ =====
 let touchStartX = 0;
 let touchStartY = 0;
@@ -1752,34 +1751,30 @@ document.addEventListener('touchmove', e => {
 document.addEventListener('touchend', e => {
     if (!isSwiping) return;
     isSwiping = false;
-    
+
     touchEndX = e.changedTouches[0].clientX;
     touchEndY = e.changedTouches[0].clientY;
-    
+
     const diffX = touchStartX - touchEndX;
     const diffY = touchStartY - touchEndY;
-    
-    // Проверяем, что свайп горизонтальный (не вертикальный скролл)
+
     if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
         const tabs = document.querySelectorAll('.tab');
         const current = document.querySelector('.tab.active');
         const idx = Array.from(tabs).indexOf(current);
         const next = diffX > 0 ? idx + 1 : idx - 1;
-        
+
         if (next >= 0 && next < tabs.length) {
-            // Добавляем анимацию
-            const currentSection = document.getElementById(current.dataset.section);
             const nextSection = document.getElementById(tabs[next].dataset.section);
-            
+
             if (diffX > 0) {
                 nextSection.classList.add('slide-left');
             } else {
                 nextSection.classList.add('slide-right');
             }
-            
+
             tabs[next].click();
-            
-            // Убираем класс анимации после завершения
+
             setTimeout(() => {
                 nextSection.classList.remove('slide-left', 'slide-right');
             }, 300);
@@ -1787,48 +1782,37 @@ document.addEventListener('touchend', e => {
     }
 }, { passive: true });
 
-    // ===== ПОИСК =====
 // ===== УЛУЧШЕННЫЙ ПОИСК =====
 document.getElementById('search').addEventListener('input', (e) => {
     const query = e.target.value.toLowerCase().trim();
-    
+
     if (!query) {
-        // Если поиск пустой — показываем все строки
         document.querySelectorAll('#vocab-content tr').forEach(row => {
             row.style.display = '';
         });
         return;
     }
-    
-    // Ищем по всем словам в словаре
+
     const matchedWords = allVocabWords.filter(w => {
         const korean = extractKorean(w.word) || extractKorean(w.translation);
         const roman = romanize(korean || w.word).toLowerCase();
         const translation = (w.translation || '').toLowerCase();
         const word = (w.word || '').toLowerCase();
-        
-        // Проверяем совпадение по любому полю
+
         return korean.includes(query) || 
                roman.includes(query) || 
                translation.includes(query) || 
                word.includes(query);
     });
-    
-    // Получаем ID найденных слов
+
     const matchedIds = new Set(matchedWords.map(w => w.id));
-    
-    // Скрываем/показываем строки
+
     document.querySelectorAll('#vocab-content tr').forEach((row, index) => {
-        if (index === 0) return; // Пропускаем заголовок таблицы
-        
+        if (index === 0) return;
         const wordId = matchedWords[index - 1]?.id;
         row.style.display = matchedIds.has(wordId) ? '' : 'none';
     });
 });
-        document.querySelectorAll('#vocab-content tr').forEach(row => {
-            row.style.display = row.textContent.toLowerCase().includes(query) ? '' : 'none';
-        });
-    });
 
     // ===== ЗАГРУЗКА СТАТИСТИКИ =====
     async function loadStats() {
