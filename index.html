@@ -122,9 +122,40 @@
             color: var(--tg-theme-link-color);
             font-size: 15px;
         }
-    </style>
-</head>
-<body>
+        /* Кнопка озвучки */
+        .speak-btn {
+          background: var(--tg-theme-button-color, #2481cc);
+          color: var(--tg-theme-button-text-color, #ffffff);
+          border: none;
+          border-radius: 50%;
+          width: 36px;
+          height: 36px;
+          font-size: 18px;
+          cursor: pointer;
+          transition: all 0.2s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .speak-btn:hover {
+          transform: scale(1.1);
+          box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .speak-btn:active {
+          transform: scale(0.95);
+        }
+        
+        .speak-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+            </style>
+        </head>
+        <body>
     <!-- Табы переключения -->
     <div class="tabs">
         <button class="tab active" data-section="vocab">📚 Мои слова</button>
@@ -300,8 +331,19 @@
         function getTtsText(item) {
             return item.tts || item.symbol;
         }
+
+        async function getAudioBlob(text) {
+          if (audioCache[text]) return audioCache[text];
+          const url = `${API_URL}/api/tts?text=${encodeURIComponent(text)}`;
+          const res = await fetch(url, {
+            headers: { 'ngrok-skip-browser-warning': 'true' }
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const blob = await res.blob();
+          audioCache[text] = URL.createObjectURL(blob);
+          return audioCache[text];
+        }
         
-        // Загрузка blob'а (без синхронных ограничений — это только кэш)
         async function loadAudio(text) {
             if (audioCache[text]) return audioCache[text];
             const url = `${API_URL}/api/tts?text=${encodeURIComponent(text)}`;
@@ -415,38 +457,60 @@
         
         // ===== ЗАГРУЗКА СЛОВАРЯ =====
         async function loadVocabulary() {
-            try {
-                const response = await fetch(`${API_URL}/api/vocabulary?user_id=${userId}`);
-                if (!response.ok) throw new Error("Ошибка сети");
-                const words = await response.json();
+          try {
+            const response = await fetch(`${API_URL}/api/vocabulary?user_id=${userId}`, {
+              headers: { 'ngrok-skip-browser-warning': 'true' }
+            });
+            if (!response.ok) throw new Error("Ошибка сети");
+            const words = await response.json();
         
-                const container = document.getElementById('vocab-content');
-                if (words.length === 0) {
-                    container.innerHTML = '<p class="empty">Словарь пуст. Добавьте слова в чате с ботом!</p>';
-                    return;
-                }
-        
-                let html = `<table>
-                    <tr><th>Слово</th><th>Перевод</th><th>Повтор</th><th></th></tr>`;
-                words.forEach(w => {
-                  // Корейское слово: сначала в колонке "Слово", если там кириллица — в "Перевод"
-                  const korean = extractKorean(w.word) || extractKorean(w.translation);
-                  // Дата: asyncpg отдаёт "2026-11-28 09:10:28..." (пробел, а не 'T') — режем и так, и так
-                  const dateStr = (w.next_review || '').split(/[T ]/)[0].split('-').reverse().join('.');
-                  html += `<tr>
-                    <td class="kr-word">${w.word}</td>
-                    <td>${w.translation}</td>
-                    <td class="date">${dateStr}</td>
-                    <td>${korean ? `<button class="speak-btn" data-text="${korean}">🔊</button>` : ''}</td>
-                  </tr>`;
-                });
-                html += `</table>`;
-                container.innerHTML = html;
-            } catch (error) {
-                console.error(error);
-                document.getElementById('vocab-content').innerHTML =
-                    `<p class="error">Ошибка загрузки.<br><small>${error.message}</small></p>`;
+            const container = document.getElementById('vocab-content');
+            if (words.length === 0) {
+              container.innerHTML = '<p class="empty">Словарь пуст. Добавьте слова в чате с ботом!</p>';
+              return;
             }
+        
+            let html = `<table>
+              <tr><th>Слово</th><th>Перевод</th><th>Повтор</th><th></th></tr>`;
+            words.forEach(w => {
+              // Извлекаем корейское слово: сначала из колонки "word", если там нет — из "translation"
+              const korean = extractKorean(w.word) || extractKorean(w.translation);
+              const dateStr = w.next_review 
+                ? w.next_review.split(/[T ]/)[0].split('-').reverse().join('.') 
+                : '—';
+              html += `<tr>
+                <td class="kr-word">${w.word}</td>
+                <td>${w.translation}</td>
+                <td class="date">${dateStr}</td>
+                <td>${korean ? `<button class="speak-btn" data-word="${korean}" title="Прослушать">🔊</button>` : ''}</td>
+              </tr>`;
+            });
+            html += `</table>`;
+            container.innerHTML = html;
+        
+            // Навешиваем обработчики на все кнопки озвучки
+            document.querySelectorAll('.speak-btn').forEach(btn => {
+              btn.onclick = async () => {
+                const word = btn.dataset.word;
+                btn.style.opacity = '0.5';
+                try {
+                  const audioUrl = await getAudioBlob(word);
+                  const audio = new Audio(audioUrl);
+                  await audio.play();
+                } catch (error) {
+                  console.error('TTS error:', error);
+                  btn.textContent = '⚠️';
+                  setTimeout(() => btn.textContent = '🔊', 2000);
+                } finally {
+                  btn.style.opacity = '1';
+                }
+              };
+            });
+          } catch (error) {
+            console.error(error);
+            document.getElementById('vocab-content').innerHTML = 
+              `<p class="error">Ошибка загрузки.<br><small>${error.message}</small></p>`;
+          }
         }
 
         document.querySelectorAll('.speak-btn').forEach(btn => {
