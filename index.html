@@ -7,14 +7,26 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --tg-theme-bg-color: #ffffff;
-            --tg-theme-text-color: #000000;
-            --tg-theme-hint-color: #888888;
-            --tg-theme-link-color: #2481cc;
-            --tg-theme-secondary-bg-color: #f0f0f0;
-            --tg-theme-button-color: #2481cc;
-            --tg-theme-button-text-color: #ffffff;
-        }
+    /* Светлая тема (по умолчанию) */
+    --tg-theme-bg-color: #ffffff;
+    --tg-theme-text-color: #000000;
+    --tg-theme-hint-color: #888888;
+    --tg-theme-link-color: #2481cc;
+    --tg-theme-secondary-bg-color: #f0f0f0;
+    --tg-theme-button-color: #2481cc;
+    --tg-theme-button-text-color: #ffffff;
+}
+
+/* Тёмная тема */
+[data-theme="dark"] {
+    --tg-theme-bg-color: #17212b;
+    --tg-theme-text-color: #ffffff;
+    --tg-theme-hint-color: #708499;
+    --tg-theme-link-color: #5288c1;
+    --tg-theme-secondary-bg-color: #232e3c;
+    --tg-theme-button-color: #5288c1;
+    --tg-theme-button-text-color: #ffffff;
+}
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--tg-theme-bg-color, #ffffff);
@@ -25,6 +37,49 @@
         }
         h2 { margin-top: 0; font-size: 20px; }
         h3 { font-size: 16px; color: var(--tg-theme-hint-color); margin: 16px 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Улучшения для тёмной темы */
+[data-theme="dark"] .hangul-card {
+    background: var(--tg-theme-secondary-bg-color);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .rule-card {
+    background: var(--tg-theme-secondary-bg-color);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .rule-card .example {
+    background: var(--tg-theme-bg-color);
+}
+
+[data-theme="dark"] table th {
+    border-bottom-color: var(--tg-theme-hint-color);
+}
+
+[data-theme="dark"] table td {
+    border-bottom-color: var(--tg-theme-secondary-bg-color);
+}
+
+[data-theme="dark"] .stat-card {
+    background: var(--tg-theme-secondary-bg-color);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .chart-container {
+    background: var(--tg-theme-secondary-bg-color);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] input[type="text"] {
+    background: var(--tg-theme-secondary-bg-color);
+    color: var(--tg-theme-text-color);
+    border-color: var(--tg-theme-hint-color);
+}
+
+[data-theme="dark"] input[type="text"]::placeholder {
+    color: var(--tg-theme-hint-color);
+}
 
         /* Табы */
         .tabs {
@@ -355,6 +410,29 @@
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
+
+// ===== ОПРЕДЕЛЕНИЕ ТЕМЫ =====
+function applyTheme() {
+    const theme = tg.colorScheme || 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+    
+    // Если Telegram отдал кастомные цвета темы — используем их
+    if (tg.themeParams) {
+        const params = tg.themeParams;
+        if (params.bg_color) document.documentElement.style.setProperty('--tg-theme-bg-color', params.bg_color);
+        if (params.text_color) document.documentElement.style.setProperty('--tg-theme-text-color', params.text_color);
+        if (params.hint_color) document.documentElement.style.setProperty('--tg-theme-hint-color', params.hint_color);
+        if (params.link_color) document.documentElement.style.setProperty('--tg-theme-link-color', params.link_color);
+        if (params.secondary_bg_color) document.documentElement.style.setProperty('--tg-theme-secondary-bg-color', params.secondary_bg_color);
+        if (params.button_color) document.documentElement.style.setProperty('--tg-theme-button-color', params.button_color);
+        if (params.button_text_color) document.documentElement.style.setProperty('--tg-theme-button-text-color', params.button_text_color);
+    }
+}
+
+applyTheme();
+
+// Слушаем изменения темы (если пользователь переключит тему в Telegram)
+tg.onEvent('themeChanged', applyTheme);
 
     const userId = tg.initDataUnsafe?.user?.id || 9235360161;
     const API_URL = "https://sunday-bot-yg41.onrender.com";
