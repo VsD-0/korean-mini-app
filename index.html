@@ -527,6 +527,101 @@
 .phrase-speak {
     flex-shrink: 0;
 }
+/* Тесты и квизы */
+.quiz-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0;
+}
+.quiz-progress {
+    width: 100%;
+    height: 6px;
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 3px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+.quiz-progress-bar {
+    height: 100%;
+    background: var(--tg-theme-button-color);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+.quiz-question {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--tg-theme-link-color);
+    text-align: center;
+    margin-bottom: 8px;
+    min-height: 36px;
+}
+.quiz-hint {
+    font-size: 14px;
+    color: var(--tg-theme-hint-color);
+    margin-bottom: 24px;
+    text-align: center;
+}
+.quiz-options {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.quiz-option {
+    background: var(--tg-theme-secondary-bg-color);
+    color: var(--tg-theme-text-color);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+}
+.quiz-option:active {
+    transform: scale(0.98);
+}
+.quiz-option.correct {
+    background: #27ae60;
+    color: white;
+    border-color: #27ae60;
+}
+.quiz-option.wrong {
+    background: #e74c3c;
+    color: white;
+    border-color: #e74c3c;
+}
+.quiz-option:disabled {
+    cursor: default;
+    opacity: 0.8;
+}
+.quiz-start-btn, .quiz-restart-btn {
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+    border: none;
+    border-radius: 12px;
+    padding: 16px 32px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 20px;
+}
+.quiz-result {
+    text-align: center;
+    padding: 20px;
+}
+.quiz-result .score {
+    font-size: 48px;
+    font-weight: bold;
+    color: var(--tg-theme-button-color);
+    margin: 16px 0;
+}
+.quiz-result .message {
+    font-size: 18px;
+    margin-bottom: 24px;
+}
             </style>
         </head>
         <body>
@@ -538,6 +633,7 @@
         <button class="tab" data-section="rules">📖 Правила</button>
 <button class="tab" data-section="grammar">📝 Грамматика</button>
 <button class="tab" data-section="phrases">✈️ Фразы</button>
+<button class="tab" data-section="quiz">🎯 Тесты</button>
         <button class="tab" data-section="stats">📊 Статистика</button>
     </div>
 
@@ -666,6 +762,18 @@
     </p>
     <div id="phrases-content"></div>
 </div>
+<!-- Секция: Тесты -->
+<div id="quiz" class="section">
+    <h2>Проверка знаний</h2>
+    <div id="quiz-content" class="loading">
+        <p style="text-align:center; margin-top: 40px; color: var(--tg-theme-hint-color);">
+            Нажмите кнопку, чтобы начать тест из 10 вопросов
+        </p>
+        <div style="text-align:center;">
+            <button class="quiz-start-btn" onclick="startQuiz()">Начать тест</button>
+        </div>
+    </div>
+</div>
     <!-- Секция: Статистика -->
     <div id="stats" class="section">
         <h2>Статистика обучения</h2>
@@ -702,6 +810,8 @@ tg.onEvent('themeChanged', applyTheme);
 
     const userId = tg.initDataUnsafe?.user?.id || 9235360161;
     const API_URL = "https://sunday-bot-yg41.onrender.com";
+
+let allVocabWords = []; // Хранилище слов для тестов
 
     // ===== ДАННЫЕ ХАНГЫЛЯ =====
     const consonants = [
@@ -1079,6 +1189,7 @@ function renderPhrases() {
             });
             if (!response.ok) throw new Error("Ошибка сети");
             const words = await response.json();
+allVocabWords = words; // Сохраняем для тестов
 
             const container = document.getElementById('vocab-content');
             if (words.length === 0) {
@@ -1158,6 +1269,138 @@ function renderGrammar() {
             }
         };
     });
+}
+// ===== ЛОГИКА ТЕСТОВ =====
+let quizPool = [];
+let currentQuizIndex = 0;
+let quizScore = 0;
+let isAnswering = false;
+
+function buildQuizPool() {
+    let pool = [];
+    
+    // 1. Добавляем фразы
+    phraseCategories.forEach(cat => {
+        cat.phrases.forEach(p => {
+            pool.push({ q: p.kr, a: p.ru, type: 'phrase' });
+        });
+    });
+    
+    // 2. Добавляем слова из словаря
+    allVocabWords.forEach(w => {
+        let kr = extractKorean(w.word) || extractKorean(w.translation);
+        if (kr && w.translation) {
+            pool.push({ q: kr, a: w.translation, type: 'vocab' });
+        }
+    });
+
+    // Перемешиваем
+    return pool.sort(() => Math.random() - 0.5);
+}
+
+function startQuiz() {
+    quizPool = buildQuizPool();
+    
+    if (quizPool.length < 4) {
+        document.getElementById('quiz-content').innerHTML = `
+            <p class="error" style="margin-top:40px;">Недостаточно слов для теста.<br>Добавьте хотя бы 4 слова в словарь!</p>
+        `;
+        return;
+    }
+
+    // Берем максимум 10 вопросов
+    quizPool = quizPool.slice(0, 10);
+    currentQuizIndex = 0;
+    quizScore = 0;
+    isAnswering = false;
+    
+    renderQuizQuestion();
+}
+
+function renderQuizQuestion() {
+    const container = document.getElementById('quiz-content');
+    const item = quizPool[currentQuizIndex];
+    const progress = ((currentQuizIndex) / quizPool.length) * 100;
+    
+    // Генерируем варианты ответов (1 правильный + 3 случайных неправильных)
+    let options = [item.a];
+    let allAnswers = quizPool.map(p => p.a).filter(a => a !== item.a);
+    
+    // Перемешиваем неправильные и берем 3
+    allAnswers.sort(() => Math.random() - 0.5);
+    options.push(...allAnswers.slice(0, 3));
+    options.sort(() => Math.random() - 0.5); // Перемешиваем все варианты
+
+    let optionsHtml = options.map(opt => `
+        <button class="quiz-option" onclick="checkAnswer(this, '${opt.replace(/'/g, "\\'")}', '${item.a.replace(/'/g, "\\'")}')">
+            ${opt}
+        </button>
+    `).join('');
+
+    container.innerHTML = `
+        <div class="quiz-container">
+            <div class="quiz-progress">
+                <div class="quiz-progress-bar" style="width: ${progress}%"></div>
+            </div>
+            <div class="quiz-question">${item.q}</div>
+            <div class="quiz-hint">Выберите правильный перевод</div>
+            <div class="quiz-options">
+                ${optionsHtml}
+            </div>
+        </div>
+    `;
+}
+
+function checkAnswer(btn, selected, correct) {
+    if (isAnswering) return;
+    isAnswering = true;
+
+    const allBtns = document.querySelectorAll('.quiz-option');
+    
+    if (selected === correct) {
+        btn.classList.add('correct');
+        quizScore++;
+    } else {
+        btn.classList.add('wrong');
+        // Подсвечиваем правильный
+        allBtns.forEach(b => {
+            if (b.textContent.trim() === correct) b.classList.add('correct');
+        });
+    }
+
+    // Блокируем все кнопки
+    allBtns.forEach(b => b.disabled = true);
+
+    // Переход к следующему вопросу через 1.2 секунды
+    setTimeout(() => {
+        currentQuizIndex++;
+        isAnswering = false;
+        if (currentQuizIndex < quizPool.length) {
+            renderQuizQuestion();
+        } else {
+            showQuizResults();
+        }
+    }, 1200);
+}
+
+function showQuizResults() {
+    const container = document.getElementById('quiz-content');
+    const percent = Math.round((quizScore / quizPool.length) * 100);
+    let message = '';
+    
+    if (percent === 100) message = '🏆 Идеально! Вы мастер!';
+    else if (percent >= 80) message = '🔥 Отличный результат!';
+    else if (percent >= 60) message = '👍 Хорошо, но можно лучше';
+    else message = '📚 Стоит повторить материал';
+
+    container.innerHTML = `
+        <div class="quiz-result">
+            <h3>Тест завершён!</h3>
+            <div class="score">${quizScore} / ${quizPool.length}</div>
+            <div class="message">${message} (${percent}%)</div>
+            <button class="quiz-restart-btn" onclick="startQuiz()">Пройти ещё раз</button>
+        </div>
+    `;
 }
     // ===== ЕДИНЫЙ ОБРАБОТЧИК ОЗВУЧКИ (делегирование) =====
     document.getElementById('vocab-content').addEventListener('click', async (e) => {
