@@ -407,6 +407,12 @@
                 }
             });
 
+        // ===== ИЗВЛЕЧЕНИЕ ХАНГЫЛЯ =====
+        function extractKorean(text) {
+          const m = (text || '').match(/[가-힣]+/);
+          return m ? m[0] : '';
+        }
+        
         // ===== ЗАГРУЗКА СЛОВАРЯ =====
         async function loadVocabulary() {
             try {
@@ -422,15 +428,17 @@
         
                 let html = `<table>
                     <tr><th>Слово</th><th>Перевод</th><th>Повтор</th><th></th></tr>`;
-                words.forEach((w, i) => {
-                    const dateStr = w.next_review
-                        ? w.next_review.split('T')[0].split('-').reverse().join('.') : '—';
-                    html += `<tr>
-                        <td class="kr-word">${w.word}</td>
-                        <td>${w.translation}</td>
-                        <td class="date">${dateStr}</td>
-                        <td><button class="speak-btn" data-word="${w.word}">🔊</button></td>
-                    </tr>`;
+                words.forEach(w => {
+                  // Корейское слово: сначала в колонке "Слово", если там кириллица — в "Перевод"
+                  const korean = extractKorean(w.word) || extractKorean(w.translation);
+                  // Дата: asyncpg отдаёт "2026-11-28 09:10:28..." (пробел, а не 'T') — режем и так, и так
+                  const dateStr = (w.next_review || '').split(/[T ]/)[0].split('-').reverse().join('.');
+                  html += `<tr>
+                    <td class="kr-word">${w.word}</td>
+                    <td>${w.translation}</td>
+                    <td class="date">${dateStr}</td>
+                    <td>${korean ? `<button class="speak-btn" data-text="${korean}">🔊</button>` : ''}</td>
+                  </tr>`;
                 });
                 html += `</table>`;
                 container.innerHTML = html;
@@ -440,6 +448,18 @@
                     `<p class="error">Ошибка загрузки.<br><small>${error.message}</small></p>`;
             }
         }
+
+        document.querySelectorAll('.speak-btn').forEach(btn => {
+          btn.onclick = async () => {
+            try {
+              const audioUrl = await getAudioBlob(btn.dataset.text);
+              const audio = new Audio(audioUrl);
+              await audio.play();
+            } catch (e) {
+              console.error('TTS error:', e);
+            }
+          };
+        });
         
         // Делегирование: клик по любой кнопке озвучки
         document.getElementById('vocab-content').addEventListener('click', (e) => {
