@@ -297,21 +297,37 @@
         // ===== КЭШ АУДИО =====
         const audioCache = {};
         
-        // Получаем текст для озвучки: слог для согласных, сам символ для гласных
         function getTtsText(item) {
             return item.tts || item.symbol;
         }
         
-        async function getAudioBlob(text) {
+        // Загрузка blob'а (без синхронных ограничений — это только кэш)
+        async function loadAudio(text) {
             if (audioCache[text]) return audioCache[text];
             const url = `${API_URL}/api/tts?text=${encodeURIComponent(text)}`;
-            const res = await fetch(url, {
-                headers: { 'ngrok-skip-browser-warning': 'true' }
-            });
+            const res = await fetch(url);
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const blob = await res.blob();
             audioCache[text] = URL.createObjectURL(blob);
             return audioCache[text];
+        }
+        
+        // Синхронное воспроизведение из кэша — работает на iOS!
+        function playFromCache(text) {
+            const url = audioCache[text];
+            if (!url) return false;
+            const audio = new Audio(url);
+            audio.play().catch(e => console.error('play blocked:', e));
+            return true;
+        }
+        
+        // Предзагрузка ВСЕХ звуков хангыля (последовательно, чтобы не зафлудить Render)
+        async function preloadAllAudio() {
+            const all = [...consonants, ...doubleConsonants, ...vowels, ...compoundVowels];
+            for (const item of all) {
+                try { await loadAudio(getTtsText(item)); } catch (e) { /* пропускаем */ }
+            }
+            console.log('Аудио предзагружено:', Object.keys(audioCache).length);
         }
 
         // ===== РЕНДЕР ХАНГЫЛЯ С ОЗВУЧКОЙ =====
@@ -345,33 +361,23 @@
                         <span class="sound">[${item.sound}]</span>
                     `;
         
-                    card.onclick = async () => {
+                    card.onclick = () => {
                         const ttsText = getTtsText(item);
-                        // Показываем и букву, и слог озвучки
-                        hint.innerHTML = `<b style="font-size:20px">${item.symbol}</b> — ${item.name} <span style="color:var(--tg-theme-link-color)">[${item.sound}]</span> <span style="opacity:.7">🔊 ${ttsText}</span>`;
-                        card.style.opacity = '0.5';
+                        hint.innerHTML = `<b style="font-size:20px">${item.symbol}</b> — ${item.name} ` +
+                            `<span style="color:var(--tg-theme-link-color)">[${item.sound}]</span> ` +
+                            `<span style="opacity:.7">🔊 ${ttsText}</span>`;
                     
-                        try {
-                            const audioUrl = await getAudioBlob(ttsText);
-                            const audio = new Audio(audioUrl);
-                            await audio.play();
-                        } catch (error) {
-                            console.error('TTS error:', error);
-                            hint.innerHTML = `⚠️ Не удалось загрузить звук (${error.message})`;
-                        } finally {
-                            card.style.opacity = '1';
+                        // Пытаемся сыграть синхронно из кэша
+                        if (!playFromCache(ttsText)) {
+                            // Если ещё не закэшировано — грузим и пробуем (на десктопе сработает)
+                            loadAudio(ttsText).then(() => playFromCache(ttsText));
                         }
                     };
         
                     container.appendChild(card);
                 });
             });
-        
-            // 5. Предзагружаем первые 5 букв при открытии таба — 
-            //    чтобы при первом клике не было задержки
-            setTimeout(() => {
-                consonants.slice(0, 5).forEach(c => getAudioBlob(getTtsText(c)).catch(() => {}));
-            }, 500);
+            preloadAllAudio();
         }
 
         // ===== ПЕРЕКЛЮЧЕНИЕ ТАБОВ =====
@@ -404,42 +410,46 @@
         // ===== ЗАГРУЗКА СЛОВАРЯ =====
         async function loadVocabulary() {
             try {
-                const response = await fetch(`${API_URL}/api/vocabulary?user_id=${userId}`, {
-                    headers: { 'ngrok-skip-browser-warning': 'true' }
-                });
+                const response = await fetch(`${API_URL}/api/vocabulary?user_id=${userId}`);
                 if (!response.ok) throw new Error("Ошибка сети");
                 const words = await response.json();
-
+        
                 const container = document.getElementById('vocab-content');
                 if (words.length === 0) {
                     container.innerHTML = '<p class="empty">Словарь пуст. Добавьте слова в чате с ботом!</p>';
                     return;
                 }
-
+        
                 let html = `<table>
-                    <tr><th>Слово</th><th>Перевод</th><th>Повтор</th></tr>`;
-                words.forEach(w => {
-                    const dateStr = w.next_review ? w.next_review.split('T')[0].split('-').reverse().join('.') : '—';
+                    <tr><th>Слово</th><th>Перевод</th><th>Повтор</th><th></th></tr>`;
+                words.forEach((w, i) => {
+                    const dateStr = w.next_review
+                        ? w.next_review.split('T')[0].split('-').reverse().join('.') : '—';
                     html += `<tr>
                         <td class="kr-word">${w.word}</td>
                         <td>${w.translation}</td>
                         <td class="date">${dateStr}</td>
-                    </tr>`;
-                    html += `<tr>
-                        <td class="kr-word">${w.word}</td>
-                        <td>${w.translation}</td>
-                        <td class="date">${dateStr}</td>
-                        <td><button onclick="playWord('${w.word}')">🔊</button></td>
+                        <td><button class="speak-btn" data-word="${w.word}">🔊</button></td>
                     </tr>`;
                 });
                 html += `</table>`;
                 container.innerHTML = html;
             } catch (error) {
                 console.error(error);
-                document.getElementById('vocab-content').innerHTML = 
+                document.getElementById('vocab-content').innerHTML =
                     `<p class="error">Ошибка загрузки.<br><small>${error.message}</small></p>`;
             }
         }
+        
+        // Делегирование: клик по любой кнопке озвучки
+        document.getElementById('vocab-content').addEventListener('click', (e) => {
+            const btn = e.target.closest('.speak-btn');
+            if (!btn) return;
+            const word = btn.dataset.word;
+            if (!playFromCache(word)) {
+                loadAudio(word).then(() => playFromCache(word));
+            }
+        });
         
         function playWord(word) {
             getAudioBlob(word).then(url => {
