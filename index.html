@@ -484,6 +484,49 @@
 }
 .speak-btn:active { transform: scale(0.9); }
 .speak-btn:disabled { opacity: 0.5; }
+
+/* Фразы */
+.phrase-category {
+    margin-bottom: 20px;
+}
+.phrase-category h3 {
+    font-size: 16px;
+    color: var(--tg-theme-link-color);
+    margin: 0 0 12px 0;
+    text-transform: none;
+    letter-spacing: 0;
+}
+.phrase-card {
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.phrase-text {
+    flex: 1;
+    min-width: 0;
+}
+.phrase-kr {
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--tg-theme-link-color);
+    margin-bottom: 2px;
+}
+.phrase-roman {
+    font-size: 12px;
+    color: var(--tg-theme-hint-color);
+    margin-bottom: 2px;
+}
+.phrase-ru {
+    font-size: 13px;
+    color: var(--tg-theme-text-color);
+}
+.phrase-speak {
+    flex-shrink: 0;
+}
             </style>
         </head>
         <body>
@@ -494,6 +537,7 @@
 <button class="tab" data-section="cards">🎴 Карточки</button>
         <button class="tab" data-section="rules">📖 Правила</button>
 <button class="tab" data-section="grammar">📝 Грамматика</button>
+<button class="tab" data-section="phrases">✈️ Фразы</button>
         <button class="tab" data-section="stats">📊 Статистика</button>
     </div>
 
@@ -613,6 +657,14 @@
         Основные грамматические конструкции
     </p>
     <div id="grammar-content"></div>
+</div>
+<!-- Секция: Фразы -->
+<div id="phrases" class="section">
+    <h2>Фразы для путешествий</h2>
+    <p style="color: var(--tg-theme-hint-color); font-size: 14px; margin-top: -8px;">
+        Полезные выражения в разных ситуациях
+    </p>
+    <div id="phrases-content"></div>
 </div>
     <!-- Секция: Статистика -->
     <div id="stats" class="section">
