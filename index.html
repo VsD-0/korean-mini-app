@@ -315,6 +315,9 @@
     transition: transform 0.6s;
     transform-style: preserve-3d;
     cursor: pointer;
+      touch-action: none;            /* критично! иначе скролл перехватывает свайп */
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .flashcard.flipped {
@@ -784,7 +787,7 @@
     <!-- Секция: Словарь -->
     <div id="vocab" class="section active">
         <h2>Мои слова</h2>
-        <input type="text" id="search" placeholder="Поиск слова..." 
+        <input type="text" id="search" placeholder="Поиск: слово, перевод, транслит..." oninput="filterVocab()"
            style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--tg-theme-hint-color); margin-bottom:12px;">
         <div id="vocab-content" class="loading">Загрузка данных...</div>
     </div>
@@ -1334,6 +1337,8 @@ function renderPhrases() {
     });
 }
     // ===== ЗАГРУЗКА СЛОВАРЯ =====
+let allWords = [];
+        
     async function loadVocabulary() {
         try {
             const response = await fetch(`${API_URL}/api/vocabulary?user_id=${userId}`, {
@@ -1343,35 +1348,55 @@ function renderPhrases() {
             const words = await response.json();
 allVocabWords = words; // Сохраняем для тестов
 
-            const container = document.getElementById('vocab-content');
-            if (words.length === 0) {
-                container.innerHTML = '<p class="empty">Словарь пуст. Добавьте слова в чате с ботом!</p>';
-                return;
-            }
+async function loadVocabulary() {
+  try {
+    const response = await fetch(`${API_URL}/api/vocabulary?user_id=${userId}`, {
+      headers: { 'ngrok-skip-browser-warning': 'true' }
+    });
+    if (!response.ok) throw new Error("Ошибка сети");
+    allWords = await response.json();      // <-- сохраняем ГЛОБАЛЬНО
+    renderVocabTable(allWords);
+  } catch (error) {
+    document.getElementById('vocab-content').innerHTML =
+      `<p class="error">Ошибка загрузки.<br><small>${error.message}</small></p>`;
+  }
+}
 
-            let html = `<table>
-                <tr><th>Слово</th><th>Перевод</th><th>Повтор</th><th></th></tr>`;
-            words.forEach(w => {
-                const korean = extractKorean(w.word) || extractKorean(w.translation);
-                const roman = romanize(korean || w.word);
-                const dateStr = w.next_review
-                    ? w.next_review.split(/[T ]/)[0].split('-').reverse().join('.')
-                    : '—';
-                html += `<tr>
-                    <td class="kr-word">${w.word}<br><span class="roman">${roman}</span></td>
-                    <td>${w.translation}</td>
-                    <td class="date">${dateStr}</td>
-                    <td>${korean ? `<button class="speak-btn" data-word="${korean}" title="Прослушать">🔊</button>` : ''}</td>
-                </tr>`;
-            });
-            html += `</table>`;
-            container.innerHTML = html;
-        } catch (error) {
-            console.error(error);
-            document.getElementById('vocab-content').innerHTML =
-                `<p class="error">Ошибка загрузки.<br><small>${error.message}</small></p>`;
-        }
-    }
+function renderVocabTable(list) {
+  const container = document.getElementById('vocab-content');
+  if (!list.length) {
+    container.innerHTML = '<p class="empty">Ничего не найдено 🔍</p>';
+    return;
+  }
+  let html = `<table><tr><th>Слово</th><th>Перевод</th><th>Повтор</th></tr>`;
+  list.forEach(w => {
+    const dateStr = w.next_review
+      ? w.next_review.split('T')[0].split('-').reverse().join('.') : '—';
+    html += `<tr>
+      <td class="kr-word">${w.word}<div class="roman">${romanize(w.word)}</div></td>
+      <td>${w.translation}</td>
+      <td class="date">${dateStr}</td>
+      <td><button class="speak-btn" onclick="speak('${w.word}')">🔊</button></td>
+    </tr>`;
+  });
+  html += `</table>`;
+  container.innerHTML = html;
+}
+
+function norm(s) {
+  return (s || '').toLowerCase().replace(/ё/g, 'е').trim();
+}
+
+function filterVocab() {
+  const q = norm(document.getElementById('search').value);
+  if (!q) { renderVocabTable(allWords); return; }
+  const filtered = allWords.filter(w =>
+    norm(w.word).includes(q) ||
+    norm(w.translation).includes(q) ||
+    norm(romanize(w.word)).includes(q)     // поиск и по транслиту "ttalgi"
+  );
+  renderVocabTable(filtered);
+}
 function renderGrammar() {
     const container = document.getElementById('grammar-content');
     container.innerHTML = '';
@@ -1781,7 +1806,46 @@ document.addEventListener('touchend', e => {
         }
     }
 }, { passive: true });
+function attachSwipe(card, onKnow, onDunno) {
+  let startX = 0, dx = 0, active = false;
 
+  card.addEventListener('pointerdown', (e) => {
+    active = true;
+    startX = e.clientX;
+    dx = 0;
+    card.setPointerCapture(e.pointerId);
+    card.style.transition = 'none';
+  });
+
+  card.addEventListener('pointermove', (e) => {
+    if (!active) return;
+    dx = e.clientX - startX;
+    card.style.transform = `translateX(${dx}px) rotate(${dx / 25}deg)`;
+    card.style.opacity = String(1 - Math.min(Math.abs(dx) / 400, 0.5));
+    card.style.boxShadow = dx > 0
+      ? '0 0 0 3px #2ecc71 inset'
+      : dx < 0 ? '0 0 0 3px #e74c3c inset' : '';
+  });
+
+  function finish() {
+    if (!active) return;
+    active = false;
+    card.style.transition = 'transform 0.25s, opacity 0.25s';
+    if (Math.abs(dx) > 100) {
+      const dir = dx > 0 ? 1 : -1;
+      card.style.transform = `translateX(${dir * window.innerWidth}px) rotate(${dir * 30}deg)`;
+      card.style.opacity = '0';
+      setTimeout(() => (dir > 0 ? onKnow() : onDunno()), 250);
+    } else {
+      card.style.transform = '';
+      card.style.opacity = '1';
+      card.style.boxShadow = '';
+    }
+  }
+
+  card.addEventListener('pointerup', finish);
+  card.addEventListener('pointercancel', finish);
+}
 // ===== УЛУЧШЕННЫЙ ПОИСК =====
 document.getElementById('search').addEventListener('input', (e) => {
     const query = e.target.value.toLowerCase().trim();
@@ -1813,7 +1877,14 @@ document.getElementById('search').addEventListener('input', (e) => {
         row.style.display = matchedIds.has(wordId) ? '' : 'none';
     });
 });
-
+attachSwipe(card,
+  () => { handleAnswer(word, true);  showNextCard(); },
+  () => { handleAnswer(word, false); showNextCard(); }
+);
+            card.addEventListener('click', (e) => {
+  if (Math.abs(dx) > 10) { e.preventDefault(); return; } // это был свайп, не клик
+  flipCard();
+});
     // ===== ЗАГРУЗКА СТАТИСТИКИ =====
     async function loadStats() {
         try {
